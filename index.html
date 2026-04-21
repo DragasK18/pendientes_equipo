@@ -228,9 +228,132 @@
   .loading-overlay p { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:.1em; color:var(--accent); }
   .spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
   @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* LOGIN SCREEN */
+  .auth-screen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 24px;
+  }
+
+  .auth-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 40px 36px; width: 100%; max-width: 380px;
+  }
+
+  .auth-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem; letter-spacing: .06em; margin-bottom: 4px;
+  }
+
+  .auth-logo span { color: var(--accent); }
+
+  .auth-sub {
+    font-size: .72rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .08em; margin-bottom: 32px;
+  }
+
+  .auth-tabs {
+    display: flex; gap: 0; margin-bottom: 24px;
+    border: 1px solid var(--border); border-radius: 5px; overflow: hidden;
+  }
+
+  .auth-tab {
+    flex: 1; padding: 8px; border: none; background: none;
+    font-family: 'DM Sans', sans-serif; font-size: .8rem;
+    color: var(--muted); cursor: pointer; transition: all .15s;
+  }
+
+  .auth-tab.active { background: var(--accent); color: #000; font-weight: 600; }
+
+  .auth-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+
+  .auth-field label {
+    font-size: .63rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .07em;
+  }
+
+  .auth-field input {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 10px 13px;
+    font-family: 'DM Sans', sans-serif; font-size: .88rem;
+    color: var(--text); outline: none; transition: border-color .15s;
+  }
+
+  .auth-field input:focus { border-color: var(--accent); }
+  .auth-field input::placeholder { color: var(--muted); }
+
+  .auth-btn {
+    width: 100%; padding: 11px;
+    background: linear-gradient(135deg, var(--accent), #00a884);
+    color: #000; border: none; border-radius: 5px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.05rem; letter-spacing: .1em;
+    cursor: pointer; transition: opacity .15s; margin-top: 6px;
+  }
+
+  .auth-btn:hover { opacity: .85; }
+  .auth-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .auth-err {
+    font-size: .75rem; color: var(--accent2);
+    margin-top: 10px; min-height: 18px; text-align: center;
+  }
+
+  .auth-ok {
+    font-size: .75rem; color: var(--accent);
+    margin-top: 10px; min-height: 18px; text-align: center;
+  }
+
+  /* USER INFO in header */
+  .user-info {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .user-email {
+    font-size: .7rem; color: var(--muted); max-width: 180px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .logout-btn {
+    background: none; border: 1px solid var(--border);
+    color: var(--muted); border-radius: 4px;
+    font-family: 'DM Sans', sans-serif; font-size: .68rem;
+    padding: 4px 10px; cursor: pointer; transition: all .15s;
+    text-transform: uppercase; letter-spacing: .06em;
+  }
+
+  .logout-btn:hover { border-color: var(--accent2); color: var(--accent2); }
 </style>
 </head>
 <body>
+
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">PENDIENTES <span>DEL EQUIPO</span></div>
+    <div class="auth-sub">Acceso seguro por usuario</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Iniciar sesión</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Registrarse</button>
+    </div>
+
+    <div id="authForm">
+      <div class="auth-field">
+        <label>Correo electrónico</label>
+        <input type="email" id="authEmail" placeholder="tu@correo.com" onkeydown="if(event.key==='Enter')submitAuth()">
+      </div>
+      <div class="auth-field">
+        <label>Contraseña</label>
+        <input type="password" id="authPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitAuth()">
+      </div>
+      <button class="auth-btn" id="authBtn" onclick="submitAuth()">ENTRAR</button>
+      <div class="auth-err" id="authErr"></div>
+      <div class="auth-ok" id="authOk"></div>
+    </div>
+  </div>
+</div>
 
 <div class="loading-overlay" id="loader">
   <div class="spinner"></div>
@@ -245,6 +368,10 @@
     </div>
     <div class="header-right">
       <div class="badge" id="badgeDate"></div>
+      <div class="user-info">
+        <span class="user-email" id="userEmail"></span>
+        <button class="logout-btn" onclick="logout()">Salir</button>
+      </div>
       <div class="sync-status">
         <div class="sync-dot loading" id="syncDot"></div>
         <span id="syncTxt">Conectando…</span>
@@ -307,29 +434,32 @@
 </div>
 
 <script>
-const SUPA_URL = 'https://gzefeqrdadcftqpfmoea.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6ZWZlcXJkYWRjZnRxcGZtb2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTY4MTEsImV4cCI6MjA5MjM3MjgxMX0.lVG9HvYeN0ltve69qUCuwwBpmaolLSjQW5qsQXRdNVA';
+const SUPA_URL = 'https://vmecmhcskgujsmtqmgbi.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZWNtaGNza2d1anNtdHFtZ2JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTk3MzEsImV4cCI6MjA5MjM3NTczMX0.s71cn2sB-zXYlG-S0GekpcS2gGoqhsJ1_smu2KvC1ak';
 
 const AREAS = [
-  { id:'trabajo',  label:'Trabajo',  icon:'💼', stripe:'s-trabajo'  },
-  { id:'personal', label:'Personal', icon:'🙂', stripe:'s-personal' },
-  { id:'salud',    label:'Salud',    icon:'💚', stripe:'s-salud'    },
-  { id:'hogar',    label:'Hogar',    icon:'🏠', stripe:'s-hogar'    },
-  { id:'otros',    label:'Otros',    icon:'✦',  stripe:'s-otros'    },
+  { id:'trabajo',  label:'Trabajo',  icon:'\u{1F4BC}', stripe:'s-trabajo'  },
+  { id:'personal', label:'Personal', icon:'\u{1F642}', stripe:'s-personal' },
+  { id:'salud',    label:'Salud',    icon:'\u{1F49A}', stripe:'s-salud'    },
+  { id:'hogar',    label:'Hogar',    icon:'\u{1F3E0}', stripe:'s-hogar'    },
+  { id:'otros',    label:'Otros',    icon:'\u2726',  stripe:'s-otros'    },
 ];
 
 let tasks = [];
 let af = {}; AREAS.forEach(a => af[a.id] = 'all');
+let currentSession = null; // { access_token, user }
+let authMode = 'login';
 
+// ── DATE INIT ──────────────────────────────────────────────
 const today = new Date();
 document.getElementById('fDate').value = today.toISOString().split('T')[0];
 const ds = today.toLocaleDateString('es-CO', {weekday:'long', day:'numeric', month:'long'});
 document.getElementById('badgeDate').textContent = ds.replace(/^\w/, c => c.toUpperCase());
 document.getElementById('fDate2').textContent = 'Actualizado: ' + ds;
 
+// ── HELPERS ────────────────────────────────────────────────
 function setSyncStatus(state, txt) {
-  const dot = document.getElementById('syncDot');
-  dot.className = 'sync-dot ' + state;
+  document.getElementById('syncDot').className = 'sync-dot ' + state;
   document.getElementById('syncTxt').textContent = txt;
 }
 
@@ -343,13 +473,87 @@ function onAreaChange() {
 }
 onAreaChange();
 
-// SUPABASE API CALLS
+// ── AUTH UI ────────────────────────────────────────────────
+function switchTab(mode) {
+  authMode = mode;
+  document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', mode === 'register');
+  document.getElementById('authBtn').textContent = mode === 'login' ? 'ENTRAR' : 'CREAR CUENTA';
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authOk').textContent = '';
+}
+
+async function submitAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPass').value;
+  const btn   = document.getElementById('authBtn');
+  const errEl = document.getElementById('authErr');
+  const okEl  = document.getElementById('authOk');
+
+  if (!email || !pass) { errEl.textContent = 'Completa todos los campos.'; return; }
+  if (pass.length < 6) { errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.'; return; }
+
+  btn.disabled = true;
+  errEl.textContent = '';
+  okEl.textContent = '';
+
+  try {
+    if (authMode === 'login') {
+      const res = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error_description || data.msg || 'Error al iniciar sesión');
+      onLogin(data);
+    } else {
+      const res = await fetch(`${SUPA_URL}/auth/v1/signup`, {
+        method: 'POST',
+        headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error_description || data.msg || 'Error al registrarse');
+      if (data.access_token) {
+        onLogin(data);
+      } else {
+        okEl.textContent = 'Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.';
+        switchTab('login');
+      }
+    }
+  } catch(e) {
+    errEl.textContent = e.message;
+  }
+  btn.disabled = false;
+}
+
+function onLogin(session) {
+  currentSession = session;
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('userEmail').textContent = session.user.email;
+  loadTasks();
+}
+
+function logout() {
+  currentSession = null;
+  tasks = [];
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPass').value = '';
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authOk').textContent = '';
+  render();
+}
+
+// ── SUPABASE API ───────────────────────────────────────────
 async function sbFetch(method, path, body) {
+  const token = currentSession?.access_token || SUPA_KEY;
   const res = await fetch(SUPA_URL + '/rest/v1/' + path, {
     method,
     headers: {
       'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Authorization': 'Bearer ' + token,
       'Content-Type': 'application/json',
       'Prefer': method === 'POST' ? 'return=representation' : '',
     },
@@ -361,8 +565,9 @@ async function sbFetch(method, path, body) {
 }
 
 async function loadTasks() {
-  setSyncStatus('loading', 'Cargando…');
+  setSyncStatus('loading', 'Cargando\u2026');
   try {
+    // RLS filtra automáticamente por user_id
     const data = await sbFetch('GET', 'tareas?order=created_at.desc&select=*');
     tasks = data || [];
     setSyncStatus('ok', 'Sincronizado');
@@ -380,8 +585,7 @@ async function addTask() {
   if (!text) return;
   const btn = document.getElementById('btnAdd');
   btn.disabled = true;
-  setSyncStatus('loading', 'Guardando…');
-
+  setSyncStatus('loading', 'Guardando\u2026');
   const area = document.getElementById('fArea').value;
   const newTask = {
     text, area,
@@ -391,14 +595,13 @@ async function addTask() {
     date: document.getElementById('fDate').value,
     done: false,
   };
-
   try {
     const res = await sbFetch('POST', 'tareas', newTask);
     tasks.unshift(res[0]);
     document.getElementById('fTask').value = '';
     document.getElementById('fSub').value  = '';
     document.getElementById('fResp').value = '';
-    setSyncStatus('ok', 'Guardado ✓');
+    setSyncStatus('ok', 'Guardado \u2713');
     render();
   } catch(e) {
     setSyncStatus('err', 'Error al guardar');
@@ -413,12 +616,12 @@ async function toggleDone(id) {
   const newDone = !t.done;
   t.done = newDone;
   render();
-  setSyncStatus('loading', 'Actualizando…');
+  setSyncStatus('loading', 'Actualizando\u2026');
   try {
     await sbFetch('PATCH', `tareas?id=eq.${id}`, { done: newDone });
     setSyncStatus('ok', 'Sincronizado');
   } catch(e) {
-    t.done = !newDone; // revert
+    t.done = !newDone;
     setSyncStatus('err', 'Error al actualizar');
     render();
   }
@@ -428,10 +631,10 @@ async function delTask(id) {
   const prev = [...tasks];
   tasks = tasks.filter(t => t.id !== id);
   render();
-  setSyncStatus('loading', 'Eliminando…');
+  setSyncStatus('loading', 'Eliminando\u2026');
   try {
     await sbFetch('DELETE', `tareas?id=eq.${id}`);
-    setSyncStatus('ok', 'Eliminado ✓');
+    setSyncStatus('ok', 'Eliminado \u2713');
   } catch(e) {
     tasks = prev;
     setSyncStatus('err', 'Error al eliminar');
@@ -469,6 +672,7 @@ function render() {
     const pC   = all.filter(t => !t.done).length;
     const f    = af[area.id];
     const vis  = f==='pending' ? all.filter(t=>!t.done) : f==='done' ? all.filter(t=>t.done) : all;
+    const cols = isW ? 7 : 6;
 
     const block = document.createElement('div');
     block.className = 'area-block';
@@ -487,10 +691,10 @@ function render() {
         <thead><tr>
           <th style="width:36px"></th>
           <th>Tarea</th>
-          <th>Subárea</th>
+          <th>Sub\u00e1rea</th>
           ${isW ? '<th>Responsable</th>' : ''}
           <th>Prioridad</th>
-          <th>Fecha límite</th>
+          <th>Fecha l\u00edmite</th>
           <th style="width:36px"></th>
         </tr></thead>
         <tbody id="tb-${area.id}"></tbody>
@@ -502,7 +706,7 @@ function render() {
     if (vis.length === 0) {
       const r = document.createElement('tr');
       r.className = 'empty-row';
-      r.innerHTML = `<td colspan="${isW?7:6}">Sin tareas en esta vista.</td>`;
+      r.innerHTML = `<td colspan="${cols}">Sin tareas en esta vista.</td>`;
       tb.appendChild(r);
       return;
     }
@@ -514,20 +718,19 @@ function render() {
       tr.innerHTML = `
         <td><div class="chk ${t.done?'on':''}" onclick="toggleDone(${t.id})"></div></td>
         <td class="t-name">${esc(t.text)}</td>
-        <td>${t.sub ? `<span class="sub-tag">${esc(t.sub)}</span>` : '<span style="color:var(--border)">—</span>'}</td>
-        ${isW ? `<td class="resp-val">${t.resp ? esc(t.resp) : '<span style="color:var(--border)">—</span>'}</td>` : ''}
+        <td>${t.sub ? `<span class="sub-tag">${esc(t.sub)}</span>` : '<span style="color:var(--border)">\u2014</span>'}</td>
+        ${isW ? `<td class="resp-val">${t.resp ? esc(t.resp) : '<span style="color:var(--border)">\u2014</span>'}</td>` : ''}
         <td><span class="prio-tag p-${t.prio}">${t.prio}</span></td>
-        <td class="date-val ${od?'ov':''}">${od?'⚠ ':''}${fmtD(t.date)}</td>
-        <td><button class="del-btn" onclick="delTask(${t.id})">×</button></td>
+        <td class="date-val ${od?'ov':''}">${od?'\u26a0 ':''}${fmtD(t.date)}</td>
+        <td><button class="del-btn" onclick="delTask(${t.id})">\u00d7</button></td>
       `;
       tb.appendChild(tr);
     });
   });
 }
 
-// Auto-refresh cada 30 segundos
-loadTasks();
-setInterval(loadTasks, 30000);
+// Auto-refresh cada 30 segundos (solo si hay sesión)
+setInterval(() => { if (currentSession) loadTasks(); }, 30000);
 </script>
 </body>
 </html>
