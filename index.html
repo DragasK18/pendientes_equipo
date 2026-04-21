@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendientes del Equipo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --card: #111827;
+    --border: #1e2d40;
+    --accent: #00d4aa;
+    --accent2: #ff4f5e;
+    --gold: #f5c842;
+    --text: #e8edf5;
+    --muted: #6b7a99;
+    --surface2: #162032;
+    --radius: 6px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh; padding: 40px 24px 60px; overflow-x: hidden;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 10% 20%, rgba(0,212,170,.06) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 30% at 90% 80%, rgba(245,200,66,.04) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .container { max-width: 980px; margin: 0 auto; position: relative; z-index: 1; }
+
+  .header {
+    display: flex; align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 32px; gap: 16px; flex-wrap: wrap;
+    padding-bottom: 22px; border-bottom: 1px solid var(--border);
+  }
+
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    letter-spacing: .04em; line-height: 1;
+  }
+
+  .header h1 span { color: var(--accent); }
+  .header-sub { font-size: .78rem; color: var(--muted); margin-top: 6px; font-weight: 300; letter-spacing: .06em; text-transform: uppercase; }
+
+  .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+  .badge {
+    background: linear-gradient(135deg, var(--accent), #00a884);
+    color: #000; font-family: 'Bebas Neue', sans-serif;
+    font-size: .95rem; letter-spacing: .12em;
+    padding: 8px 18px; border-radius: 4px; white-space: nowrap;
+  }
+
+  .sync-status {
+    font-size: .68rem; color: var(--muted);
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  .sync-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--muted); transition: background .3s;
+  }
+
+  .sync-dot.ok  { background: var(--accent); }
+  .sync-dot.err { background: var(--accent2); }
+  .sync-dot.loading { background: var(--gold); animation: pulse .8s infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .kpi-strip { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+
+  .kpi-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 20px; flex: 1; min-width: 110px;
+  }
+
+  .kpi-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: .04em; line-height: 1; }
+  .kpi-num.accent { color: var(--accent); }
+  .kpi-num.red    { color: var(--accent2); }
+  .kpi-num.gold   { color: var(--gold); }
+  .kpi-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
+
+  .progress-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 20px; flex: 2; min-width: 200px;
+    display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  }
+
+  .prog-top { display: flex; justify-content: space-between; font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+  .prog-pct { color: var(--accent); font-weight: 600; }
+  .prog-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #00a884); border-radius: 3px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+
+  .add-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px; margin-bottom: 22px;
+  }
+
+  .sec-title { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: .1em; color: var(--muted); margin-bottom: 12px; }
+
+  .form-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+  .fg { display: flex; flex-direction: column; gap: 4px; }
+  .fl { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+
+  .form-row input, .form-row select {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 7px 11px;
+    font-family: 'DM Sans', sans-serif; font-size: .82rem;
+    color: var(--text); outline: none; height: 34px; transition: border-color .15s;
+  }
+
+  .form-row input::placeholder { color: var(--muted); }
+  .form-row input:focus, .form-row select:focus { border-color: var(--accent); }
+  .form-row select option { background: #1e2d40; }
+
+  .btn-add {
+    height: 34px; padding: 0 20px;
+    background: linear-gradient(135deg, var(--accent), #00a884);
+    color: #000; border: none; border-radius: 4px;
+    font-family: 'Bebas Neue', sans-serif; font-size: .95rem; letter-spacing: .08em;
+    cursor: pointer; transition: opacity .15s; white-space: nowrap; align-self: flex-end;
+  }
+  .btn-add:hover { opacity: .85; }
+  .btn-add:disabled { opacity: .4; cursor: not-allowed; }
+
+  .areas-wrap { display: flex; flex-direction: column; gap: 14px; }
+
+  .area-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+
+  .area-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,.018);
+  }
+
+  .area-stripe { width: 4px; height: 18px; border-radius: 2px; flex-shrink: 0; }
+  .area-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: .08em; }
+
+  .filter-tabs { display: flex; gap: 3px; }
+
+  .ftab {
+    padding: 2px 9px; border-radius: 3px; border: none;
+    background: none; font-family: 'DM Sans', sans-serif;
+    font-size: .68rem; color: var(--muted); cursor: pointer; transition: all .15s;
+    text-transform: uppercase; letter-spacing: .06em;
+  }
+
+  .ftab.active { background: rgba(0,212,170,.12); color: var(--accent); }
+  .ftab:hover:not(.active) { color: var(--text); }
+
+  .pend-badge {
+    margin-left: auto; font-size: .67rem; color: var(--muted);
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 2px 8px; border-radius: 10px;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead th {
+    padding: 7px 14px; font-size: .63rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+    background: rgba(255,255,255,.018); border-bottom: 1px solid var(--border); text-align: left;
+  }
+
+  tbody tr { border-bottom: 1px solid rgba(30,45,64,.8); transition: background .12s; animation: fadeIn .22s ease; }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr.done td { opacity: .35; }
+  tbody tr.done .t-name { text-decoration: line-through; }
+
+  td { padding: 9px 14px; font-size: .82rem; vertical-align: middle; }
+
+  .chk {
+    width: 16px; height: 16px; border: 1.5px solid var(--border); border-radius: 3px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all .15s; background: transparent; flex-shrink: 0;
+  }
+
+  .chk.on { background: var(--accent); border-color: var(--accent); }
+  .chk.on::after { content:''; width:4px; height:7px; border:1.5px solid #000; border-top:none; border-left:none; transform:rotate(45deg) translateY(-1px); display:block; }
+
+  .t-name { color: var(--text); }
+  .sub-tag { font-size:.67rem; background:var(--surface2); border:1px solid var(--border); color:var(--muted); padding:1px 7px; border-radius:3px; }
+  .resp-val { font-size:.78rem; color:var(--muted); }
+
+  .prio-tag { font-size:.64rem; font-weight:600; padding:2px 8px; border-radius:3px; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
+  .p-alta  { background:rgba(255,79,94,.15);  color:var(--accent2); }
+  .p-media { background:rgba(245,200,66,.12); color:var(--gold); }
+  .p-baja  { background:rgba(0,212,170,.1);   color:var(--accent); }
+
+  .date-val { font-size:.75rem; color:var(--muted); white-space:nowrap; }
+  .date-val.ov { color:var(--accent2); font-weight:500; }
+
+  .del-btn { background:none; border:none; cursor:pointer; color:var(--muted); font-size:1rem; padding:2px 5px; border-radius:3px; line-height:1; transition:color .15s; }
+  .del-btn:hover { color:var(--accent2); }
+
+  .empty-row td { text-align:center; padding:20px; font-size:.76rem; color:var(--muted); font-style:italic; }
+
+  .footer { margin-top:36px; padding-top:18px; border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .footer p { font-size:.7rem; color:var(--muted); letter-spacing:.05em; }
+
+  .s-trabajo  { background: #2563eb; }
+  .s-personal { background: #7c3aed; }
+  .s-salud    { background: var(--accent); }
+  .s-hogar    { background: var(--gold); }
+  .s-otros    { background: var(--muted); }
+
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(11,15,26,.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999; flex-direction: column; gap: 14px;
+  }
+
+  .loading-overlay p { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:.1em; color:var(--accent); }
+  .spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loader">
+  <div class="spinner"></div>
+  <p>Conectando al equipo…</p>
+</div>
+
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>PENDIENTES <span>DEL EQUIPO</span></h1>
+      <p class="header-sub">Gestión colaborativa · Organizado por área</p>
+    </div>
+    <div class="header-right">
+      <div class="badge" id="badgeDate"></div>
+      <div class="sync-status">
+        <div class="sync-dot loading" id="syncDot"></div>
+        <span id="syncTxt">Conectando…</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi-strip">
+    <div class="kpi-card"><div class="kpi-num" id="kT">0</div><div class="kpi-label">Total</div></div>
+    <div class="kpi-card"><div class="kpi-num red" id="kP">0</div><div class="kpi-label">Pendientes</div></div>
+    <div class="kpi-card"><div class="kpi-num accent" id="kD">0</div><div class="kpi-label">Completadas</div></div>
+    <div class="kpi-card"><div class="kpi-num gold" id="kO">0</div><div class="kpi-label">Vencidas</div></div>
+    <div class="progress-card">
+      <div class="prog-top"><span>Progreso general</span><span class="prog-pct" id="pPct">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" id="pFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="add-card">
+    <div class="sec-title">Nueva tarea</div>
+    <div class="form-row">
+      <div class="fg"><span class="fl">Tarea</span>
+        <input style="width:200px" type="text" id="fTask" placeholder="Descripción…" onkeydown="if(event.key==='Enter')addTask()">
+      </div>
+      <div class="fg"><span class="fl">Área</span>
+        <select style="width:120px" id="fArea" onchange="onAreaChange()">
+          <option value="trabajo">💼 Trabajo</option>
+          <option value="personal">🙂 Personal</option>
+          <option value="salud">💚 Salud</option>
+          <option value="hogar">🏠 Hogar</option>
+          <option value="otros">✦ Otros</option>
+        </select>
+      </div>
+      <div class="fg"><span class="fl">Subárea</span>
+        <input style="width:140px" type="text" id="fSub" placeholder="Ej: Proyectos…">
+      </div>
+      <div class="fg" id="wResp"><span class="fl">Responsable</span>
+        <input style="width:130px" type="text" id="fResp" placeholder="Nombre…">
+      </div>
+      <div class="fg"><span class="fl">Prioridad</span>
+        <select style="width:90px" id="fPrio">
+          <option value="alta">Alta</option>
+          <option value="media" selected>Media</option>
+          <option value="baja">Baja</option>
+        </select>
+      </div>
+      <div class="fg"><span class="fl">Fecha límite</span>
+        <input style="width:132px" type="date" id="fDate">
+      </div>
+      <button class="btn-add" id="btnAdd" onclick="addTask()">+ Agregar</button>
+    </div>
+  </div>
+
+  <div class="areas-wrap" id="board"></div>
+
+  <div class="footer">
+    <p>Equipo · Gestión de Pendientes · Supabase</p>
+    <p id="fDate2"></p>
+  </div>
+</div>
+
+<script>
+const SUPA_URL = 'https://gzefeqrdadcftqpfmoea.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6ZWZlcXJkYWRjZnRxcGZtb2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTY4MTEsImV4cCI6MjA5MjM3MjgxMX0.lVG9HvYeN0ltve69qUCuwwBpmaolLSjQW5qsQXRdNVA';
+
+const AREAS = [
+  { id:'trabajo',  label:'Trabajo',  icon:'💼', stripe:'s-trabajo'  },
+  { id:'personal', label:'Personal', icon:'🙂', stripe:'s-personal' },
+  { id:'salud',    label:'Salud',    icon:'💚', stripe:'s-salud'    },
+  { id:'hogar',    label:'Hogar',    icon:'🏠', stripe:'s-hogar'    },
+  { id:'otros',    label:'Otros',    icon:'✦',  stripe:'s-otros'    },
+];
+
+let tasks = [];
+let af = {}; AREAS.forEach(a => af[a.id] = 'all');
+
+const today = new Date();
+document.getElementById('fDate').value = today.toISOString().split('T')[0];
+const ds = today.toLocaleDateString('es-CO', {weekday:'long', day:'numeric', month:'long'});
+document.getElementById('badgeDate').textContent = ds.replace(/^\w/, c => c.toUpperCase());
+document.getElementById('fDate2').textContent = 'Actualizado: ' + ds;
+
+function setSyncStatus(state, txt) {
+  const dot = document.getElementById('syncDot');
+  dot.className = 'sync-dot ' + state;
+  document.getElementById('syncTxt').textContent = txt;
+}
+
+function isOv(d) { return d && new Date(d + 'T23:59:59') < today; }
+function fmtD(d) { if(!d) return ''; return new Date(d+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function onAreaChange() {
+  const isW = document.getElementById('fArea').value === 'trabajo';
+  document.getElementById('wResp').style.display = isW ? '' : 'none';
+}
+onAreaChange();
+
+// SUPABASE API CALLS
+async function sbFetch(method, path, body) {
+  const res = await fetch(SUPA_URL + '/rest/v1/' + path, {
+    method,
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : '',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) throw new Error(await res.text());
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+async function loadTasks() {
+  setSyncStatus('loading', 'Cargando…');
+  try {
+    const data = await sbFetch('GET', 'tareas?order=created_at.desc&select=*');
+    tasks = data || [];
+    setSyncStatus('ok', 'Sincronizado');
+    document.getElementById('loader').style.display = 'none';
+    render();
+  } catch(e) {
+    setSyncStatus('err', 'Error de conexión');
+    document.getElementById('loader').style.display = 'none';
+    console.error(e);
+  }
+}
+
+async function addTask() {
+  const text = document.getElementById('fTask').value.trim();
+  if (!text) return;
+  const btn = document.getElementById('btnAdd');
+  btn.disabled = true;
+  setSyncStatus('loading', 'Guardando…');
+
+  const area = document.getElementById('fArea').value;
+  const newTask = {
+    text, area,
+    sub:  document.getElementById('fSub').value.trim(),
+    resp: document.getElementById('fResp').value.trim(),
+    prio: document.getElementById('fPrio').value,
+    date: document.getElementById('fDate').value,
+    done: false,
+  };
+
+  try {
+    const res = await sbFetch('POST', 'tareas', newTask);
+    tasks.unshift(res[0]);
+    document.getElementById('fTask').value = '';
+    document.getElementById('fSub').value  = '';
+    document.getElementById('fResp').value = '';
+    setSyncStatus('ok', 'Guardado ✓');
+    render();
+  } catch(e) {
+    setSyncStatus('err', 'Error al guardar');
+    console.error(e);
+  }
+  btn.disabled = false;
+}
+
+async function toggleDone(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  const newDone = !t.done;
+  t.done = newDone;
+  render();
+  setSyncStatus('loading', 'Actualizando…');
+  try {
+    await sbFetch('PATCH', `tareas?id=eq.${id}`, { done: newDone });
+    setSyncStatus('ok', 'Sincronizado');
+  } catch(e) {
+    t.done = !newDone; // revert
+    setSyncStatus('err', 'Error al actualizar');
+    render();
+  }
+}
+
+async function delTask(id) {
+  const prev = [...tasks];
+  tasks = tasks.filter(t => t.id !== id);
+  render();
+  setSyncStatus('loading', 'Eliminando…');
+  try {
+    await sbFetch('DELETE', `tareas?id=eq.${id}`);
+    setSyncStatus('ok', 'Eliminado ✓');
+  } catch(e) {
+    tasks = prev;
+    setSyncStatus('err', 'Error al eliminar');
+    render();
+  }
+}
+
+function setFilter(aId, f, btn) {
+  af[aId] = f;
+  btn.closest('.filter-tabs').querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render() {
+  const total   = tasks.length;
+  const done    = tasks.filter(t => t.done).length;
+  const pend    = total - done;
+  const overdue = tasks.filter(t => !t.done && isOv(t.date)).length;
+  const pct     = total ? Math.round(done / total * 100) : 0;
+
+  document.getElementById('kT').textContent = total;
+  document.getElementById('kP').textContent = pend;
+  document.getElementById('kD').textContent = done;
+  document.getElementById('kO').textContent = overdue;
+  document.getElementById('pPct').textContent = pct + '%';
+  document.getElementById('pFill').style.width = pct + '%';
+
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  AREAS.forEach(area => {
+    const isW  = area.id === 'trabajo';
+    const all  = tasks.filter(t => t.area === area.id);
+    const pC   = all.filter(t => !t.done).length;
+    const f    = af[area.id];
+    const vis  = f==='pending' ? all.filter(t=>!t.done) : f==='done' ? all.filter(t=>t.done) : all;
+
+    const block = document.createElement('div');
+    block.className = 'area-block';
+    block.innerHTML = `
+      <div class="area-head">
+        <div class="area-stripe ${area.stripe}"></div>
+        <span class="area-name">${area.icon} ${area.label}</span>
+        <div class="filter-tabs">
+          <button class="ftab ${f==='all'?'active':''}"     onclick="setFilter('${area.id}','all',this)">Todas</button>
+          <button class="ftab ${f==='pending'?'active':''}" onclick="setFilter('${area.id}','pending',this)">Pendientes</button>
+          <button class="ftab ${f==='done'?'active':''}"    onclick="setFilter('${area.id}','done',this)">Listas</button>
+        </div>
+        <span class="pend-badge">${pC} pendiente${pC!==1?'s':''}</span>
+      </div>
+      <table>
+        <thead><tr>
+          <th style="width:36px"></th>
+          <th>Tarea</th>
+          <th>Subárea</th>
+          ${isW ? '<th>Responsable</th>' : ''}
+          <th>Prioridad</th>
+          <th>Fecha límite</th>
+          <th style="width:36px"></th>
+        </tr></thead>
+        <tbody id="tb-${area.id}"></tbody>
+      </table>
+    `;
+    board.appendChild(block);
+
+    const tb = document.getElementById('tb-' + area.id);
+    if (vis.length === 0) {
+      const r = document.createElement('tr');
+      r.className = 'empty-row';
+      r.innerHTML = `<td colspan="${isW?7:6}">Sin tareas en esta vista.</td>`;
+      tb.appendChild(r);
+      return;
+    }
+
+    vis.forEach(t => {
+      const od = !t.done && isOv(t.date);
+      const tr = document.createElement('tr');
+      if (t.done) tr.classList.add('done');
+      tr.innerHTML = `
+        <td><div class="chk ${t.done?'on':''}" onclick="toggleDone(${t.id})"></div></td>
+        <td class="t-name">${esc(t.text)}</td>
+        <td>${t.sub ? `<span class="sub-tag">${esc(t.sub)}</span>` : '<span style="color:var(--border)">—</span>'}</td>
+        ${isW ? `<td class="resp-val">${t.resp ? esc(t.resp) : '<span style="color:var(--border)">—</span>'}</td>` : ''}
+        <td><span class="prio-tag p-${t.prio}">${t.prio}</span></td>
+        <td class="date-val ${od?'ov':''}">${od?'⚠ ':''}${fmtD(t.date)}</td>
+        <td><button class="del-btn" onclick="delTask(${t.id})">×</button></td>
+      `;
+      tb.appendChild(tr);
+    });
+  });
+}
+
+// Auto-refresh cada 30 segundos
+loadTasks();
+setInterval(loadTasks, 30000);
+</script>
+</body>
+</html>
