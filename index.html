@@ -4,394 +4,483 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pendientes del Equipo</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0b0f1a;
-    --card: #111827;
-    --border: #1e2d40;
-    --accent: #00d4aa;
-    --accent2: #ff4f5e;
-    --gold: #f5c842;
-    --text: #e8edf5;
-    --muted: #6b7a99;
-    --surface2: #162032;
-    --radius: 6px;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh; padding: 40px 24px 60px; overflow-x: hidden;
-  }
-
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background:
-      radial-gradient(ellipse 60% 40% at 10% 20%, rgba(0,212,170,.06) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 30% at 90% 80%, rgba(245,200,66,.04) 0%, transparent 60%);
-    pointer-events: none; z-index: 0;
-  }
-
-  .container { max-width: 980px; margin: 0 auto; position: relative; z-index: 1; }
-
-  .header {
-    display: flex; align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 32px; gap: 16px; flex-wrap: wrap;
-    padding-bottom: 22px; border-bottom: 1px solid var(--border);
-  }
-
-  .header h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
-    letter-spacing: .04em; line-height: 1;
-  }
-
-  .header h1 span { color: var(--accent); }
-  .header-sub { font-size: .78rem; color: var(--muted); margin-top: 6px; font-weight: 300; letter-spacing: .06em; text-transform: uppercase; }
-
-  .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-
-  .badge {
-    background: linear-gradient(135deg, var(--accent), #00a884);
-    color: #000; font-family: 'Bebas Neue', sans-serif;
-    font-size: .95rem; letter-spacing: .12em;
-    padding: 8px 18px; border-radius: 4px; white-space: nowrap;
-  }
-
-  .sync-status {
-    font-size: .68rem; color: var(--muted);
-    display: flex; align-items: center; gap: 5px;
-  }
-
-  .sync-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--muted); transition: background .3s;
-  }
-
-  .sync-dot.ok  { background: var(--accent); }
-  .sync-dot.err { background: var(--accent2); }
-  .sync-dot.loading { background: var(--gold); animation: pulse .8s infinite; }
-
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-  .kpi-strip { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-
-  .kpi-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 14px 20px; flex: 1; min-width: 110px;
-  }
-
-  .kpi-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: .04em; line-height: 1; }
-  .kpi-num.accent { color: var(--accent); }
-  .kpi-num.red    { color: var(--accent2); }
-  .kpi-num.gold   { color: var(--gold); }
-  .kpi-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
-
-  .progress-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 14px 20px; flex: 2; min-width: 200px;
-    display: flex; flex-direction: column; justify-content: center; gap: 8px;
-  }
-
-  .prog-top { display: flex; justify-content: space-between; font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
-  .prog-pct { color: var(--accent); font-weight: 600; }
-  .prog-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .prog-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #00a884); border-radius: 3px; transition: width .5s cubic-bezier(.4,0,.2,1); }
-
-  .add-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px 20px; margin-bottom: 22px;
-  }
-
-  .sec-title { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: .1em; color: var(--muted); margin-bottom: 12px; }
-
-  .form-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
-  .fg { display: flex; flex-direction: column; gap: 4px; }
-  .fl { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
-
-  .form-row input, .form-row select {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 4px; padding: 7px 11px;
-    font-family: 'DM Sans', sans-serif; font-size: .82rem;
-    color: var(--text); outline: none; height: 34px; transition: border-color .15s;
-  }
-
-  .form-row input::placeholder { color: var(--muted); }
-  .form-row input:focus, .form-row select:focus { border-color: var(--accent); }
-  .form-row select option { background: #1e2d40; }
-
-  .btn-add {
-    height: 34px; padding: 0 20px;
-    background: linear-gradient(135deg, var(--accent), #00a884);
-    color: #000; border: none; border-radius: 4px;
-    font-family: 'Bebas Neue', sans-serif; font-size: .95rem; letter-spacing: .08em;
-    cursor: pointer; transition: opacity .15s; white-space: nowrap; align-self: flex-end;
-  }
-  .btn-add:hover { opacity: .85; }
-  .btn-add:disabled { opacity: .4; cursor: not-allowed; }
-
-  .areas-wrap { display: flex; flex-direction: column; gap: 14px; }
-
-  .area-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-
-  .area-head {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 16px; border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,.018);
-  }
-
-  .area-stripe { width: 4px; height: 18px; border-radius: 2px; flex-shrink: 0; }
-  .area-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: .08em; }
-
-  .filter-tabs { display: flex; gap: 3px; }
-
-  .ftab {
-    padding: 2px 9px; border-radius: 3px; border: none;
-    background: none; font-family: 'DM Sans', sans-serif;
-    font-size: .68rem; color: var(--muted); cursor: pointer; transition: all .15s;
-    text-transform: uppercase; letter-spacing: .06em;
-  }
-
-  .ftab.active { background: rgba(0,212,170,.12); color: var(--accent); }
-  .ftab:hover:not(.active) { color: var(--text); }
-
-  .pend-badge {
-    margin-left: auto; font-size: .67rem; color: var(--muted);
-    background: var(--surface2); border: 1px solid var(--border);
-    padding: 2px 8px; border-radius: 10px;
-  }
-
-  table { width: 100%; border-collapse: collapse; }
-
-  thead th {
-    padding: 7px 14px; font-size: .63rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
-    background: rgba(255,255,255,.018); border-bottom: 1px solid var(--border); text-align: left;
-  }
-
-  tbody tr { border-bottom: 1px solid rgba(30,45,64,.8); transition: background .12s; animation: fadeIn .22s ease; }
-
-  @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
-
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--surface2); }
-  tbody tr.done td { opacity: .35; }
-  tbody tr.done .t-name { text-decoration: line-through; }
-
-  td { padding: 9px 14px; font-size: .82rem; vertical-align: middle; }
-
-  .chk {
-    width: 16px; height: 16px; border: 1.5px solid var(--border); border-radius: 3px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: all .15s; background: transparent; flex-shrink: 0;
-  }
-
-  .chk.on { background: var(--accent); border-color: var(--accent); }
-  .chk.on::after { content:''; width:4px; height:7px; border:1.5px solid #000; border-top:none; border-left:none; transform:rotate(45deg) translateY(-1px); display:block; }
-
-  .t-name { color: var(--text); }
-  .sub-tag { font-size:.67rem; background:var(--surface2); border:1px solid var(--border); color:var(--muted); padding:1px 7px; border-radius:3px; }
-  .resp-val { font-size:.78rem; color:var(--muted); }
-
-  .prio-tag { font-size:.64rem; font-weight:600; padding:2px 8px; border-radius:3px; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
-  .p-alta  { background:rgba(255,79,94,.15);  color:var(--accent2); }
-  .p-media { background:rgba(245,200,66,.12); color:var(--gold); }
-  .p-baja  { background:rgba(0,212,170,.1);   color:var(--accent); }
-
-  .date-val { font-size:.75rem; color:var(--muted); white-space:nowrap; }
-  .date-val.ov { color:var(--accent2); font-weight:500; }
-
-  .del-btn { background:none; border:none; cursor:pointer; color:var(--muted); font-size:1rem; padding:2px 5px; border-radius:3px; line-height:1; transition:color .15s; }
-  .del-btn:hover { color:var(--accent2); }
-
-  .empty-row td { text-align:center; padding:20px; font-size:.76rem; color:var(--muted); font-style:italic; }
-
-  .footer { margin-top:36px; padding-top:18px; border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
-  .footer p { font-size:.7rem; color:var(--muted); letter-spacing:.05em; }
-
-  .s-trabajo  { background: #2563eb; }
-  .s-personal { background: #7c3aed; }
-  .s-salud    { background: var(--accent); }
-  .s-hogar    { background: var(--gold); }
-  .s-otros    { background: var(--muted); }
-
-  .loading-overlay {
-    position: fixed; inset: 0; background: rgba(11,15,26,.85);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 999; flex-direction: column; gap: 14px;
-  }
-
-  .loading-overlay p { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:.1em; color:var(--accent); }
-  .spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
-  @keyframes spin { to{transform:rotate(360deg)} }
-
-  /* LOGIN SCREEN */
-  .auth-screen {
-    position: fixed; inset: 0; background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000; padding: 24px;
-  }
-
-  .auth-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 40px 36px; width: 100%; max-width: 380px;
-  }
-
-  .auth-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem; letter-spacing: .06em; margin-bottom: 4px;
-  }
-
-  .auth-logo span { color: var(--accent); }
-
-  .auth-sub {
-    font-size: .72rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .08em; margin-bottom: 32px;
-  }
-
-  .auth-tabs {
-    display: flex; gap: 0; margin-bottom: 24px;
-    border: 1px solid var(--border); border-radius: 5px; overflow: hidden;
-  }
-
-  .auth-tab {
-    flex: 1; padding: 8px; border: none; background: none;
-    font-family: 'DM Sans', sans-serif; font-size: .8rem;
-    color: var(--muted); cursor: pointer; transition: all .15s;
-  }
-
-  .auth-tab.active { background: var(--accent); color: #000; font-weight: 600; }
-
-  .auth-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
-
-  .auth-field label {
-    font-size: .63rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .07em;
-  }
-
-  .auth-field input {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 5px; padding: 10px 13px;
-    font-family: 'DM Sans', sans-serif; font-size: .88rem;
-    color: var(--text); outline: none; transition: border-color .15s;
-  }
-
-  .auth-field input:focus { border-color: var(--accent); }
-  .auth-field input::placeholder { color: var(--muted); }
-
-  .auth-btn {
-    width: 100%; padding: 11px;
-    background: linear-gradient(135deg, var(--accent), #00a884);
-    color: #000; border: none; border-radius: 5px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.05rem; letter-spacing: .1em;
-    cursor: pointer; transition: opacity .15s; margin-top: 6px;
-  }
-
-  .auth-btn:hover { opacity: .85; }
-  .auth-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-  .auth-err {
-    font-size: .75rem; color: var(--accent2);
-    margin-top: 10px; min-height: 18px; text-align: center;
-  }
-
-  .auth-ok {
-    font-size: .75rem; color: var(--accent);
-    margin-top: 10px; min-height: 18px; text-align: center;
-  }
-
-  /* USER INFO in header */
-  .user-info {
-    display: flex; align-items: center; gap: 10px;
-  }
-
-  .user-email {
-    font-size: .7rem; color: var(--muted); max-width: 180px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-
-  .logout-btn {
-    background: none; border: 1px solid var(--border);
-    color: var(--muted); border-radius: 4px;
-    font-family: 'DM Sans', sans-serif; font-size: .68rem;
-    padding: 4px 10px; cursor: pointer; transition: all .15s;
-    text-transform: uppercase; letter-spacing: .06em;
-  }
-
-  .logout-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+:root {
+  --bg:#080c14; --card:#0f1623; --card2:#161e2e; --border:#1d2a3f;
+  --text:#eaf0fb; --muted:#64748b; --subtle:#1e2d45;
+
+  /* Acento único: índigo */
+  --copper:#6366f1; --copper2:#818cf8; --copper-bg:rgba(99,102,241,.12);
+
+  /* Azul info */
+  --blue:#38bdf8; --blue-bg:rgba(56,189,248,.1);
+
+  /* Estados semánticos */
+  --red:#f43f5e; --red-bg:rgba(244,63,94,.1);
+  --green:#10b981; --green-bg:rgba(16,185,129,.1);
+  --amber:#f59e0b; --amber-bg:rgba(245,158,11,.1);
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,.1);
+
+  --radius:10px;
+  --shadow-card:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.2);
+  --shadow-hover:0 4px 24px rgba(99,102,241,.15);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Ubuntu',sans-serif;min-height:100vh;padding:0;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 40% at 5% 10%,rgba(99,102,241,.08) 0%,transparent 55%),
+             radial-gradient(ellipse 50% 30% at 95% 90%,rgba(56,189,248,.05) 0%,transparent 55%);}
+
+/* ── NAV TABS ── */
+.nav-bar{display:flex;align-items:center;gap:0;background:rgba(15,22,35,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;position:sticky;top:0;z-index:100;}
+.nav-tab{font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:.9rem;letter-spacing:.1em;color:var(--muted);
+  padding:14px 20px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.nav-tab.active{color:var(--copper);border-bottom-color:var(--copper);}
+.nav-tab:hover:not(.active){color:var(--text);}
+.nav-brand{font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:1.1rem;letter-spacing:.08em;color:var(--text);margin-right:24px;}
+.nav-brand span{color:var(--copper);}
+.nav-sync{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:.68rem;color:var(--muted);}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:background .3s;}
+.sync-dot.ok{background:var(--green);}
+.sync-dot.err{background:var(--red);}
+.sync-dot.loading{background:var(--amber);animation:blink .9s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ── PAGES ── */
+.page{display:none;padding:28px 28px 64px;max-width:1100px;margin:0 auto;position:relative;z-index:1;}
+.page.active{display:block;}
+
+/* ── HEADER ── */
+.page-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding-bottom:20px;margin-bottom:24px;border-bottom:1px solid var(--border);}
+.page-header h2{font-family:'Ubuntu',sans-serif;font-weight:800;font-size:clamp(1.6rem,3.5vw,2.4rem);
+  letter-spacing:-.04em;line-height:1.1;}
+.page-header h2 span{color:var(--copper);}
+.page-sub{font-size:.74rem;color:var(--muted);margin-top:4px;letter-spacing:.06em;text-transform:uppercase;font-weight:300;}
+.badge{background:linear-gradient(135deg,var(--copper),var(--copper2));color:#fff;
+  font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:.85rem;letter-spacing:.12em;
+  padding:6px 14px;border-radius:4px;white-space:nowrap;}
+
+/* ── KPI STRIP ── */
+.kpi-strip{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 20px;flex:1;min-width:105px;position:relative;overflow:hidden;
+  box-shadow:var(--shadow-card);transition:box-shadow .2s,border-color .2s;}
+.kpi-card:hover{box-shadow:var(--shadow-hover);border-color:var(--copper);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:8px 0 0 8px;}
+.kpi-card.c-total::before{background:var(--blue);}
+.kpi-card.c-pend::before{background:var(--red);}
+.kpi-card.c-done::before{background:var(--green);}
+.kpi-card.c-venc::before{background:var(--amber);}
+.kpi-num{font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:2.4rem;letter-spacing:.03em;line-height:1;}
+.kpi-num.blue{color:var(--blue);} .kpi-num.red{color:var(--red);} .kpi-num.green{color:var(--green);} .kpi-num.amber{color:var(--amber);}
+.kpi-label{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:3px;}
+.prog-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 20px;flex:2;min-width:190px;display:flex;flex-direction:column;justify-content:center;gap:9px;}
+.prog-top{display:flex;justify-content:space-between;font-size:.69rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+.prog-pct{color:var(--copper);font-weight:600;}
+.prog-track{height:5px;background:var(--subtle);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--copper),var(--copper2));border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+
+/* ── ADD FORM ── */
+.add-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;}
+.sec-title{font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:.95rem;letter-spacing:.1em;color:var(--muted);margin-bottom:12px;}
+.form-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fl{font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+.form-row input,.form-row select{background:var(--card2);border:1px solid var(--border);
+  border-radius:5px;padding:7px 11px;font-family:'Ubuntu',sans-serif;font-size:.82rem;
+  color:var(--text);outline:none;height:34px;transition:border-color .15s;}
+.form-row input::placeholder{color:var(--muted);}
+.form-row input:focus,.form-row select:focus{border-color:var(--copper);}
+.form-row select option{background:#1c2333;}
+.btn-add{height:34px;padding:0 20px;align-self:flex-end;background:linear-gradient(135deg,var(--copper),#00a884);
+  color:#000;border:none;border-radius:5px;font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:.9rem;
+  letter-spacing:.08em;cursor:pointer;transition:opacity .15s;white-space:nowrap;}
+.btn-add:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(99,102,241,.4);} .btn-add:disabled{opacity:.35;cursor:not-allowed;}
+
+/* ── AREA BLOCKS ── */
+.areas-wrap{display:flex;flex-direction:column;gap:12px;}
+.area-block{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-card);transition:box-shadow .2s;}
+.area-block:hover{box-shadow:var(--shadow-hover);}
+.area-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.015);flex-wrap:wrap;row-gap:6px;}
+.area-stripe{width:3px;height:20px;border-radius:2px;flex-shrink:0;}
+.area-name{font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:1rem;letter-spacing:.08em;color:var(--text);}
+.head-filters{display:flex;gap:2px;flex-wrap:wrap;}
+.ftab{padding:3px 8px;border-radius:4px;border:none;background:none;font-family:'Ubuntu',sans-serif;
+  font-size:.65rem;color:var(--muted);cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.06em;}
+.ftab.active{background:var(--copper-bg);color:var(--copper);font-weight:500;}
+.ftab.active-red{background:var(--red-bg);color:var(--red);font-weight:500;}
+.ftab.active-amb{background:var(--amber-bg);color:var(--amber);font-weight:500;}
+.ftab.active-grn{background:var(--green-bg);color:var(--green);font-weight:500;}
+.ftab.active-blue{background:var(--blue-bg);color:var(--blue);font-weight:500;}
+.ftab:hover:not(.active):not(.active-red):not(.active-amb):not(.active-grn):not(.active-blue){color:var(--text);}
+.sep{width:1px;height:16px;background:var(--border);margin:0 4px;align-self:center;}
+.pend-badge{margin-left:auto;font-size:.66rem;color:var(--muted);background:var(--card2);
+  border:1px solid var(--border);padding:2px 9px;border-radius:10px;white-space:nowrap;}
+
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse;}
+thead th{padding:7px 12px;font-size:.61rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--muted);background:rgba(255,255,255,.012);border-bottom:1px solid var(--border);
+  text-align:left;cursor:pointer;user-select:none;white-space:nowrap;}
+thead th:hover{color:var(--text);}
+thead th.sort-asc::after{content:' ↑';color:var(--copper);}
+thead th.sort-desc::after{content:' ↓';color:var(--copper);}
+thead th.no-sort{cursor:default;}
+tbody tr{border-bottom:1px solid rgba(29,42,63,.8);transition:background .15s;animation:rowIn .2s ease;}
+@keyframes rowIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:rgba(99,102,241,.05);}
+tbody tr.done td{opacity:.32;}
+tbody tr.done .t-name{text-decoration:line-through;}
+td{padding:8px 12px;font-size:.82rem;vertical-align:middle;}
+.chk{width:17px;height:17px;border:1.5px solid var(--border);border-radius:4px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.chk.on{background:var(--copper);border-color:var(--copper);}
+.chk.on::after{content:'';width:4px;height:7px;border:1.5px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px);display:block;}
+.t-name{color:var(--text);line-height:1.4;}
+.sub-tag{font-size:.66rem;background:var(--blue-bg);border:1px solid rgba(74,158,255,.2);color:var(--blue);padding:1px 7px;border-radius:3px;}
+.resp-val{font-size:.78rem;color:var(--muted);}
+.prio-tag{font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+.p-alta{background:var(--red-bg);color:var(--red);}
+.p-media{background:var(--amber-bg);color:var(--amber);}
+.p-baja{background:var(--green-bg);color:var(--green);}
+.date-val{font-size:.74rem;color:var(--muted);white-space:nowrap;}
+.date-val.ov{color:var(--red);font-weight:500;}
+
+/* edit inline */
+.edit-input{background:var(--card2);border:1px solid var(--copper);border-radius:4px;
+  padding:3px 7px;font-family:'Ubuntu',sans-serif;font-size:.82rem;color:var(--text);
+  outline:none;width:100%;min-width:80px;}
+.edit-select{background:var(--card2);border:1px solid var(--copper);border-radius:4px;
+  padding:3px 6px;font-family:'Ubuntu',sans-serif;font-size:.82rem;color:var(--text);outline:none;}
+.edit-select option{background:#1c2333;}
+.edit-actions{display:flex;gap:4px;margin-top:2px;}
+.btn-save{background:var(--green-bg);border:1px solid var(--green);color:var(--green);
+  border-radius:3px;padding:2px 8px;font-size:.7rem;cursor:pointer;font-family:'Ubuntu',sans-serif;}
+.btn-cancel{background:var(--red-bg);border:1px solid var(--red);color:var(--red);
+  border-radius:3px;padding:2px 8px;font-size:.7rem;cursor:pointer;font-family:'Ubuntu',sans-serif;}
+
+.edit-btn{background:none;border:none;cursor:pointer;color:var(--subtle);font-size:.85rem;padding:2px 5px;border-radius:3px;transition:color .15s;}
+.edit-btn:hover{color:var(--blue);}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--subtle);font-size:1.1rem;padding:2px 5px;border-radius:3px;line-height:1;transition:color .15s;}
+.del-btn:hover{color:var(--red);}
+.empty-row td{text-align:center;padding:22px;font-size:.76rem;color:var(--muted);font-style:italic;}
+
+/* ── DASHBOARD ── */
+.dash-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.dash-filters select,.dash-filters input{background:var(--card2);border:1px solid var(--border);
+  border-radius:5px;padding:6px 12px;font-family:'Ubuntu',sans-serif;font-size:.82rem;
+  color:var(--text);outline:none;height:34px;}
+.dash-filters select:focus,.dash-filters input:focus{border-color:var(--copper);}
+.dash-filters select option{background:#1c2333;}
+.btn-dash-reset{height:34px;padding:0 14px;background:transparent;border:1px solid var(--border);
+  border-radius:5px;color:var(--muted);font-family:'Ubuntu',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s;}
+.btn-dash-reset:hover{border-color:var(--copper);color:var(--copper);}
+
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:20px;}
+.dash-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-card);transition:box-shadow .2s,border-color .2s;}
+.dash-card:hover{box-shadow:var(--shadow-hover);}
+.dash-card-title{font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:.85rem;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;}
+
+/* bar chart */
+.bar-chart{display:flex;flex-direction:column;gap:8px;}
+.bc-row{display:flex;align-items:center;gap:8px;}
+.bc-label{font-size:.75rem;color:var(--text);min-width:120px;flex-shrink:0;white-space:nowrap;}
+.bc-track{flex:1;height:14px;background:var(--subtle);border-radius:3px;overflow:hidden;}
+.bc-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+.bc-val{font-size:.72rem;color:var(--muted);width:38px;text-align:right;flex-shrink:0;}
+
+/* donut */
+.donut-wrap{display:flex;align-items:center;gap:16px;}
+.donut-svg{flex-shrink:0;}
+.donut-legend{display:flex;flex-direction:column;gap:6px;}
+.dleg-item{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--text);}
+.dleg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+/* progress list */
+.prog-list{display:flex;flex-direction:column;gap:10px;}
+.pl-row{display:flex;flex-direction:column;gap:4px;}
+.pl-head{display:flex;justify-content:space-between;font-size:.76rem;color:var(--text);}
+.pl-pct{color:var(--copper);font-weight:600;}
+.pl-track{height:6px;background:var(--subtle);border-radius:3px;overflow:hidden;}
+.pl-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+
+.dash-full{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;}
+
+/* FOOTER */
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.footer p{font-size:.68rem;color:var(--muted);letter-spacing:.05em;}
+
+/* LOADER */
+.loader{position:fixed;inset:0;background:rgba(13,17,23,.9);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;z-index:999;}
+.spinner{width:34px;height:34px;border:3px solid var(--subtle);border-top-color:var(--copper);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader p{font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:1.1rem;letter-spacing:.1em;color:var(--copper);}
+
+/* stripe colors */
+.s-trabajo{background:#3b82f6;} .s-personal{background:#a78bfa;} .s-salud{background:#10b981;} .s-hogar{background:#f59e0b;} .s-otros{background:#64748b;}
+
+
+/* ── AREA DROPDOWNS ── */
+.area-dropdowns{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;}
+.area-sel{background:var(--card2);border:1px solid var(--border);border-radius:4px;
+  padding:4px 8px;font-family:'Ubuntu',sans-serif;font-size:.72rem;color:var(--text);
+  outline:none;height:28px;cursor:pointer;transition:border-color .15s;}
+.area-sel:focus{border-color:var(--copper);}
+.area-sel option{background:#1c2333;}
+.area-dropdowns .fg{gap:2px;}
+.area-dropdowns .fl{font-size:.58rem;}
+.btn-clear-area{height:28px;padding:0 8px;background:transparent;border:1px solid var(--border);
+  border-radius:4px;color:var(--muted);cursor:pointer;font-size:.8rem;transition:all .15s;align-self:flex-end;}
+.btn-clear-area:hover{border-color:var(--copper);color:var(--copper);}
+
+
+/* ── RESPONSABLES ── */
+.resp-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.resp-avatar{width:34px;height:34px;border-radius:50%;background:var(--copper-bg);border:1px solid var(--copper);
+  display:flex;align-items:center;justify-content:center;font-family:"Bebas Neue",'Ubuntu',sans-serif;
+  font-size:.9rem;color:var(--copper);flex-shrink:0;}
+.resp-name{font-weight:500;font-size:.88rem;flex:1;}
+.resp-email{font-size:.78rem;color:var(--muted);}
+.resp-del{background:none;border:none;cursor:pointer;color:var(--subtle);font-size:1rem;padding:2px 6px;transition:color .15s;}
+.resp-del:hover{color:var(--red);}
+
+/* ── SEMÁFORO ── */
+.semaforo-wrap{display:flex;flex-direction:column;gap:8px;}
+.sem-row{display:grid;grid-template-columns:18px 140px 1fr;align-items:center;gap:12px;background:var(--card2);
+  border-radius:6px;padding:10px 14px;border:1px solid var(--border);}
+.sem-luz{width:14px;height:14px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor;}
+.sem-luz.verde  {background:var(--green);color:var(--green);box-shadow:0 0 10px rgba(16,185,129,.5);}
+.sem-luz.amarillo{background:var(--amber);color:var(--amber);box-shadow:0 0 10px rgba(245,158,11,.5);}
+.sem-luz.rojo   {background:var(--red);color:var(--red);box-shadow:0 0 10px rgba(244,63,94,.5);}
+.sem-name{font-weight:500;font-size:.85rem;}
+.sem-stats{display:flex;gap:6px;font-size:.72rem;flex-wrap:wrap;align-items:center;}
+.sem-stat{padding:2px 8px;border-radius:3px;}
+.sem-stat.venc{background:var(--red-bg);color:var(--red);}
+.sem-stat.prox{background:var(--amber-bg);color:var(--amber);}
+.sem-stat.ok  {background:var(--green-bg);color:var(--green);}
+.sem-stat.total{background:var(--blue-bg);color:var(--blue);}
+/* ── AREAS MANAGEMENT ── */
+.area-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .15s;}
+.area-item:hover{border-color:var(--subtle);}
+.area-color-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+.area-item-icon{font-size:1.2rem;}
+.area-item-label{flex:1;font-weight:500;font-size:.9rem;}
+.area-item-id{font-size:.7rem;color:var(--muted);background:var(--card2);padding:2px 7px;border-radius:3px;}
+.area-edit-btn{background:none;border:1px solid var(--border);border-radius:4px;padding:4px 10px;
+  color:var(--muted);cursor:pointer;font-size:.75rem;transition:all .15s;}
+.area-edit-btn:hover{border-color:var(--blue);color:var(--blue);}
+.area-del-btn{background:none;border:1px solid var(--border);border-radius:4px;padding:4px 10px;
+  color:var(--muted);cursor:pointer;font-size:.75rem;transition:all .15s;}
+.area-del-btn:hover{border-color:var(--red);color:var(--red);}
+.area-edit-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+
+/* ── CALENDARIO ── */
+.cal-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+@media(max-width:800px){.cal-layout{grid-template-columns:1fr;}}
+
+.cal-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+.cal-title{font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:1.1rem;letter-spacing:.08em;color:var(--text);}
+.cal-nav-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);
+  width:28px;height:28px;cursor:pointer;font-size:.9rem;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.cal-nav-btn:hover{border-color:var(--copper);color:var(--copper);}
+
+.cal-grid{padding:14px;}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px;}
+.cal-wd{text-align:center;font-size:.62rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--muted);padding:4px 0;}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-day{min-height:44px;border-radius:5px;padding:4px;cursor:pointer;
+  transition:background .15s;position:relative;border:1px solid transparent;}
+.cal-day:hover{background:var(--card2);}
+.cal-day.other-month .cal-day-num{color:var(--subtle);}
+.cal-day.today{border-color:var(--copper);}
+.cal-day.today .cal-day-num{color:var(--copper);font-weight:600;}
+.cal-day.selected{background:var(--copper-bg);border-color:var(--copper);}
+.cal-day-num{font-size:.78rem;color:var(--text);}
+.cal-dots{display:flex;gap:2px;flex-wrap:wrap;margin-top:2px;}
+.cal-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+
+/* Day detail panel */
+.day-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.day-panel-header{padding:14px 18px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.015);}
+.day-panel-title{font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:1rem;letter-spacing:.08em;color:var(--text);}
+.day-panel-sub{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.day-task-list{padding:12px;}
+.day-task-item{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;
+  border-radius:5px;margin-bottom:6px;border:1px solid var(--border);background:var(--card2);transition:background .12s;}
+.day-task-item:hover{background:var(--subtle);}
+.day-task-item.done-item{opacity:.38;}
+.day-task-item.done-item .day-task-name{text-decoration:line-through;}
+.day-task-name{font-size:.82rem;color:var(--text);flex:1;line-height:1.4;}
+.day-task-meta{display:flex;flex-direction:column;gap:3px;align-items:flex-end;flex-shrink:0;}
+.day-task-resp{font-size:.68rem;color:var(--muted);}
+.day-empty{padding:24px;text-align:center;font-size:.78rem;color:var(--muted);font-style:italic;}
+
+/* ── LIGHT MODE ── */
+body.light {
+  --bg:#f0f4f8;
+  --card:#ffffff;
+  --card2:#f8fafc;
+  --border:#e2e8f0;
+  --text:#0f172a;
+  --muted:#64748b;
+  --subtle:#e2e8f0;
+
+  --copper:#4f46e5;
+  --copper2:#6366f1;
+  --copper-bg:rgba(79,70,229,.08);
+
+  --blue:#0284c7;
+  --blue-bg:rgba(2,132,199,.08);
+
+  --red:#e11d48;
+  --red-bg:rgba(225,29,72,.08);
+
+  --green:#059669;
+  --green-bg:rgba(5,150,105,.08);
+
+  --amber:#d97706;
+  --amber-bg:rgba(217,119,6,.08);
+
+  --purple:#7c3aed;
+  --purple-bg:rgba(124,58,237,.08);
+
+  --shadow-card:0 1px 3px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.04);
+  --shadow-hover:0 4px 20px rgba(79,70,229,.12);
+}
+
+body.light::before{
+  background:radial-gradient(ellipse 60% 40% at 5% 10%,rgba(99,102,241,.06) 0%,transparent 55%),
+             radial-gradient(ellipse 50% 30% at 95% 90%,rgba(56,189,248,.04) 0%,transparent 55%);
+}
+
+body.light .nav-bar{
+  background:rgba(255,255,255,.92);
+  border-bottom-color:var(--border);
+}
+
+body.light thead th{
+  background:rgba(0,0,0,.02);
+}
+
+body.light tbody tr:hover{
+  background:rgba(79,70,229,.04);
+}
+
+body.light .area-head{
+  background:rgba(0,0,0,.015);
+}
+
+body.light .loader{
+  background:rgba(240,244,248,.92);
+}
+
+body.light .sync-dot.ok { background:var(--green); }
+body.light .sync-dot.err { background:var(--red); }
+body.light .sync-dot.loading { background:var(--amber); }
+
+body.light .chk { border-color:#cbd5e1; }
+body.light .chk.on { background:var(--copper); border-color:var(--copper); }
+
+body.light .kpi-card::before { opacity:.8; }
+
+body.light .cal-day.today { border-color:var(--copper); }
+body.light .cal-day.selected { background:var(--copper-bg); }
+body.light .cal-day:hover { background:#f1f5f9; }
+
+body.light .sem-row { background:#f8fafc; }
+body.light .area-item { background:#f8fafc; }
+body.light .resp-item { background:#f8fafc; }
+body.light .day-task-item { background:#f8fafc; }
+
+/* Theme toggle button */
+.theme-toggle{
+  background:none;
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:4px 12px;
+  color:var(--muted);
+  cursor:pointer;
+  font-family:'Ubuntu',sans-serif;
+  font-size:.75rem;
+  font-weight:500;
+  transition:all .2s;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  white-space:nowrap;
+}
+.theme-toggle:hover{
+  border-color:var(--copper);
+  color:var(--copper);
+}
+/* ── IMPORT BUTTON ── */
+.btn-import{padding:6px 14px;background:transparent;border:1px solid var(--copper);
+  border-radius:5px;color:var(--copper);font-family:'Ubuntu',sans-serif;font-size:.78rem;
+  font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn-import:hover{background:var(--copper-bg);}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
-<div class="auth-screen" id="authScreen">
-  <div class="auth-card">
-    <div class="auth-logo">PENDIENTES <span>DEL EQUIPO</span></div>
-    <div class="auth-sub">Acceso seguro por usuario</div>
+<div class="loader" id="loader"><div class="spinner"></div><p>Conectando al equipo…</p></div>
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Iniciar sesión</button>
-      <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Registrarse</button>
-    </div>
-
-    <div id="authForm">
-      <div class="auth-field">
-        <label>Correo electrónico</label>
-        <input type="email" id="authEmail" placeholder="tu@correo.com" onkeydown="if(event.key==='Enter')submitAuth()">
-      </div>
-      <div class="auth-field">
-        <label>Contraseña</label>
-        <input type="password" id="authPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitAuth()">
-      </div>
-      <button class="auth-btn" id="authBtn" onclick="submitAuth()">ENTRAR</button>
-      <div class="auth-err" id="authErr"></div>
-      <div class="auth-ok" id="authOk"></div>
-    </div>
+<!-- NAV -->
+<div class="nav-bar">
+  <span class="nav-brand" style="font-family:'Ubuntu',sans-serif;font-weight:800;font-size:1rem;letter-spacing:-.01em">Pend<span style="color:var(--copper)">ientes</span></span>
+  <button class="nav-tab active" onclick="showPage('tasks',this)">Tareas</button>
+  <button class="nav-tab" onclick="showPage('dash',this)">Dashboard</button>
+  <button class="nav-tab" onclick="showPage('areas',this)">⚙ Áreas</button>
+  <button class="nav-tab" onclick="showPage('responsables',this)">👥 Responsables</button>
+  <button class="nav-tab" onclick="showPage('calendario',this)">📅 Calendario</button>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
+  <div class="nav-sync">
+    <div class="sync-dot loading" id="syncDot"></div>
+    <span id="syncTxt">Conectando…</span>
   </div>
 </div>
 
-<div class="loading-overlay" id="loader">
-  <div class="spinner"></div>
-  <p>Conectando al equipo…</p>
-</div>
-
-<div class="container">
-  <div class="header">
+<!-- ══ PAGE: TAREAS ══ -->
+<div class="page active" id="page-tasks">
+  <div class="page-header">
     <div>
-      <h1>PENDIENTES <span>DEL EQUIPO</span></h1>
-      <p class="header-sub">Gestión colaborativa · Organizado por área</p>
+      <h2>PENDIENTES <span>DEL EQUIPO</span></h2>
+      <p class="page-sub">Gestión colaborativa · Por área</p>
     </div>
-    <div class="header-right">
-      <div class="badge" id="badgeDate"></div>
-      <div class="user-info">
-        <span class="user-email" id="userEmail"></span>
-        <button class="logout-btn" onclick="logout()">Salir</button>
-      </div>
-      <div class="sync-status">
-        <div class="sync-dot loading" id="syncDot"></div>
-        <span id="syncTxt">Conectando…</span>
-      </div>
-    </div>
+    <div class="badge" id="badgeDate"></div>
   </div>
 
   <div class="kpi-strip">
-    <div class="kpi-card"><div class="kpi-num" id="kT">0</div><div class="kpi-label">Total</div></div>
-    <div class="kpi-card"><div class="kpi-num red" id="kP">0</div><div class="kpi-label">Pendientes</div></div>
-    <div class="kpi-card"><div class="kpi-num accent" id="kD">0</div><div class="kpi-label">Completadas</div></div>
-    <div class="kpi-card"><div class="kpi-num gold" id="kO">0</div><div class="kpi-label">Vencidas</div></div>
-    <div class="progress-card">
+    <div class="kpi-card c-total"><div class="kpi-num blue" id="kT">0</div><div class="kpi-label">Total</div></div>
+    <div class="kpi-card c-pend"> <div class="kpi-num red"   id="kP">0</div><div class="kpi-label">Pendientes</div></div>
+    <div class="kpi-card c-done"> <div class="kpi-num green" id="kD">0</div><div class="kpi-label">Completadas</div></div>
+    <div class="kpi-card c-venc"> <div class="kpi-num amber" id="kO">0</div><div class="kpi-label">Vencidas</div></div>
+    <div class="prog-card">
       <div class="prog-top"><span>Progreso general</span><span class="prog-pct" id="pPct">0%</span></div>
       <div class="prog-track"><div class="prog-fill" id="pFill" style="width:0%"></div></div>
     </div>
   </div>
 
   <div class="add-card">
-    <div class="sec-title">Nueva tarea</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="sec-title" style="margin-bottom:0">Nueva tarea</div>
+      <button class="btn-import" onclick="document.getElementById('xlsxInput').click()">📥 Importar Excel</button>
+      <input type="file" id="xlsxInput" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this)">
+    </div>
+    <div style="font-size:.68rem;color:var(--muted);margin-bottom:12px;">
+      Columnas: <span style="color:var(--copper)">Tarea · Área · Subárea · Responsable · Prioridad · Fecha límite</span>
+      &nbsp;·&nbsp; Área: trabajo/personal/salud/hogar/otros &nbsp;·&nbsp; Prioridad: alta/media/baja &nbsp;·&nbsp; Fecha: YYYY-MM-DD
+    </div>
     <div class="form-row">
       <div class="fg"><span class="fl">Tarea</span>
         <input style="width:200px" type="text" id="fTask" placeholder="Descripción…" onkeydown="if(event.key==='Enter')addTask()">
@@ -406,22 +495,36 @@
         </select>
       </div>
       <div class="fg"><span class="fl">Subárea</span>
-        <input style="width:140px" type="text" id="fSub" placeholder="Ej: Proyectos…">
+        <input style="width:135px" type="text" id="fSub" placeholder="Ej: Proyectos…">
       </div>
       <div class="fg" id="wResp"><span class="fl">Responsable</span>
-        <input style="width:130px" type="text" id="fResp" placeholder="Nombre…">
+        <select style="width:140px" id="fResp"><option value="">— Seleccionar —</option></select>
       </div>
       <div class="fg"><span class="fl">Prioridad</span>
-        <select style="width:90px" id="fPrio">
+        <select style="width:88px" id="fPrio">
           <option value="alta">Alta</option>
           <option value="media" selected>Media</option>
           <option value="baja">Baja</option>
         </select>
       </div>
       <div class="fg"><span class="fl">Fecha límite</span>
-        <input style="width:132px" type="date" id="fDate">
+        <input style="width:130px" type="date" id="fDate">
       </div>
       <button class="btn-add" id="btnAdd" onclick="addTask()">+ Agregar</button>
+    </div>
+  </div>
+
+
+  <!-- IMPORT MODAL -->
+  <div id="importModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:520px;width:92%;position:relative;">
+      <div style="font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:1.2rem;letter-spacing:.08em;margin-bottom:6px;">IMPORTAR EXCEL &nbsp;<span style="color:var(--copper)" id="importCount"></span></div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:14px;" id="importMsg"></div>
+      <div id="importPreview" style="max-height:240px;overflow-y:auto;font-size:.76rem;margin-bottom:18px;"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="closeImport()" style="padding:8px 18px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);cursor:pointer;font-family:'Ubuntu',sans-serif;font-size:.82rem;">Cancelar</button>
+        <button id="btnConfirmImport" onclick="confirmImport()" style="padding:8px 20px;background:linear-gradient(135deg,var(--copper),var(--copper2));color:#000;border:none;border-radius:5px;font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:.9rem;letter-spacing:.08em;cursor:pointer;">✓ INSERTAR TODAS</button>
+      </div>
     </div>
   </div>
 
@@ -433,304 +536,1589 @@
   </div>
 </div>
 
-<script>
-const SUPA_URL = 'https://vmecmhcskgujsmtqmgbi.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtZWNtaGNza2d1anNtdHFtZ2JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTk3MzEsImV4cCI6MjA5MjM3NTczMX0.s71cn2sB-zXYlG-S0GekpcS2gGoqhsJ1_smu2KvC1ak';
+<!-- ══ PAGE: DASHBOARD ══ -->
+<div class="page" id="page-dash">
+  <div class="page-header">
+    <div>
+      <h2>DASHBOARD <span>DE PROGRESO</span></h2>
+      <p class="page-sub">Visualización y análisis · Filtra por cualquier dimensión</p>
+    </div>
+    <div class="badge" id="dashBadge"></div>
+  </div>
 
-const AREAS = [
-  { id:'trabajo',  label:'Trabajo',  icon:'\u{1F4BC}', stripe:'s-trabajo'  },
-  { id:'personal', label:'Personal', icon:'\u{1F642}', stripe:'s-personal' },
-  { id:'salud',    label:'Salud',    icon:'\u{1F49A}', stripe:'s-salud'    },
-  { id:'hogar',    label:'Hogar',    icon:'\u{1F3E0}', stripe:'s-hogar'    },
-  { id:'otros',    label:'Otros',    icon:'\u2726',  stripe:'s-otros'    },
+  <!-- FILTERS -->
+  <div class="dash-filters">
+    <div class="fg"><span class="fl">Área</span>
+      <select id="dArea" onchange="renderDash()">
+        <option value="">Todas las áreas</option>
+        <option value="trabajo">💼 Trabajo</option>
+        <option value="personal">🙂 Personal</option>
+        <option value="salud">💚 Salud</option>
+        <option value="hogar">🏠 Hogar</option>
+        <option value="otros">✦ Otros</option>
+      </select>
+    </div>
+    <div class="fg"><span class="fl">Subárea</span>
+      <select id="dSub" onchange="renderDash()"><option value="">Todas</option></select>
+    </div>
+    <div class="fg"><span class="fl">Responsable</span>
+      <select id="dResp" onchange="renderDash()"><option value="">Todos</option></select>
+    </div>
+    <div class="fg"><span class="fl">Prioridad</span>
+      <select id="dPrio" onchange="renderDash()">
+        <option value="">Todas</option>
+        <option value="alta">Alta</option>
+        <option value="media">Media</option>
+        <option value="baja">Baja</option>
+      </select>
+    </div>
+    <div class="fg"><span class="fl">Estado</span>
+      <select id="dStatus" onchange="renderDash()">
+        <option value="">Todos</option>
+        <option value="pending">Pendientes</option>
+        <option value="done">Completadas</option>
+        <option value="overdue">Vencidas</option>
+      </select>
+    </div>
+    <button class="btn-dash-reset" onclick="resetDashFilters()">↺ Limpiar</button>
+  </div>
+
+  <!-- KPI row -->
+  <div class="kpi-strip">
+    <div class="kpi-card c-total"><div class="kpi-num blue"  id="dkT">0</div><div class="kpi-label">Total filtrado</div></div>
+    <div class="kpi-card c-pend"> <div class="kpi-num red"   id="dkP">0</div><div class="kpi-label">Pendientes</div></div>
+    <div class="kpi-card c-done"> <div class="kpi-num green" id="dkD">0</div><div class="kpi-label">Completadas</div></div>
+    <div class="kpi-card c-venc"> <div class="kpi-num amber" id="dkO">0</div><div class="kpi-label">Vencidas</div></div>
+    <div class="prog-card">
+      <div class="prog-top"><span>Progreso filtrado</span><span class="prog-pct" id="dpPct">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" id="dpFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <!-- Por área -->
+    <div class="dash-card">
+      <div class="dash-card-title">Progreso por Área</div>
+      <div class="prog-list" id="dAreaProg"></div>
+    </div>
+    <!-- Por prioridad donut -->
+    <div class="dash-card">
+      <div class="dash-card-title">Distribución por Prioridad</div>
+      <div class="donut-wrap">
+        <svg class="donut-svg" width="160" height="160" viewBox="0 0 160 160" id="donutSvg"></svg>
+        <div class="donut-legend" id="donutLegend"></div>
+      </div>
+    </div>
+    <!-- Por subárea -->
+    <div class="dash-card">
+      <div class="dash-card-title">Tareas por Subárea</div>
+      <div class="bar-chart" id="dSubBar"></div>
+    </div>
+    <!-- Por responsable -->
+    <div class="dash-card">
+      <div class="dash-card-title">Carga por Responsable</div>
+      <div class="bar-chart" id="dRespBar"></div>
+    </div>
+    <!-- Semáforo responsables -->
+    <div class="dash-card">
+      <div class="dash-card-title">🚦 Semáforo por Responsable</div>
+      <div class="semaforo-wrap" id="dSemaforo"></div>
+    </div>
+  </div>
+
+  <!-- Timeline / vencimientos -->
+  <div class="dash-full">
+    <div class="dash-card-title">Próximos Vencimientos (pendientes)</div>
+    <div id="dTimeline"></div>
+  </div>
+
+  <div class="footer">
+    <p>Equipo · Dashboard de Progreso</p>
+    <p id="fDate3"></p>
+  </div>
+</div>
+
+
+<!-- ══ PAGE: ÁREAS ══ -->
+<div class="page" id="page-areas">
+  <div class="page-header">
+    <div>
+      <h2>GESTIÓN DE <span>ÁREAS</span></h2>
+      <p class="page-sub">Crea, edita o elimina las áreas de trabajo</p>
+    </div>
+  </div>
+
+  <div class="add-card" style="max-width:600px">
+    <div class="sec-title">Nueva área</div>
+    <div class="form-row" style="align-items:flex-end;gap:10px">
+      <div class="fg"><span class="fl">Ícono (emoji)</span>
+        <input style="width:70px;text-align:center;font-size:1.2rem" type="text" id="aIcon" placeholder="💼" maxlength="2">
+      </div>
+      <div class="fg"><span class="fl">Nombre</span>
+        <input style="width:180px" type="text" id="aLabel" placeholder="Ej: Universidad…">
+      </div>
+      <div class="fg"><span class="fl">Color</span>
+        <input style="width:50px;height:34px;padding:2px;cursor:pointer;border-radius:4px;border:1px solid var(--border);background:var(--card2)" type="color" id="aColor" value="#00d4aa">
+      </div>
+      <button class="btn-add" onclick="addArea()">+ Agregar Área</button>
+    </div>
+  </div>
+
+  <div style="max-width:600px" id="areasList"></div>
+
+  <div class="footer">
+    <p>Los cambios se aplican inmediatamente en Tareas y Dashboard</p>
+  </div>
+</div>
+
+
+<!-- ══ PAGE: RESPONSABLES ══ -->
+<div class="page" id="page-responsables">
+  <div class="page-header">
+    <div>
+      <h2>GESTIÓN DE <span>RESPONSABLES</span></h2>
+      <p class="page-sub">Registra el equipo y sus correos para notificaciones</p>
+    </div>
+    <button class="btn-add" style="align-self:flex-start" onclick="openNotifModal()">📧 Enviar notificaciones</button>
+  </div>
+
+  <!-- EmailJS Config -->
+  <div class="add-card" style="max-width:700px;margin-bottom:16px">
+    <div class="sec-title">Configuración EmailJS</div>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:12px">
+      Regístrate gratis en <a href="https://emailjs.com" target="_blank" style="color:var(--copper)">emailjs.com</a> → crea un servicio y template → pega los IDs aquí.
+    </div>
+    <div class="form-row">
+      <div class="fg"><span class="fl">Service ID</span>
+        <input style="width:160px" type="text" id="ejsService" placeholder="service_xxxxxx">
+      </div>
+      <div class="fg"><span class="fl">Template ID</span>
+        <input style="width:160px" type="text" id="ejsTemplate" placeholder="template_xxxxxx">
+      </div>
+      <div class="fg"><span class="fl">Public Key</span>
+        <input style="width:180px" type="text" id="ejsPublicKey" placeholder="xxxxxxxxxxxxxxxxx">
+      </div>
+      <button class="btn-add" onclick="saveEmailJSConfig()">💾 Guardar</button>
+    </div>
+    <div id="ejsStatus" style="margin-top:8px;font-size:.75rem;color:var(--muted)"></div>
+  </div>
+
+  <!-- Add responsable -->
+  <div class="add-card" style="max-width:700px">
+    <div class="sec-title">Agregar responsable</div>
+    <div class="form-row">
+      <div class="fg"><span class="fl">Nombre</span>
+        <input style="width:160px" type="text" id="rNombre" placeholder="Ej: ALEJANDRO">
+      </div>
+      <div class="fg"><span class="fl">Correo</span>
+        <input style="width:220px" type="email" id="rEmail" placeholder="correo@empresa.com">
+      </div>
+      <button class="btn-add" onclick="addResponsable()">+ Agregar</button>
+    </div>
+  </div>
+
+  <div style="max-width:700px;margin-top:16px" id="respList"></div>
+
+  <div class="footer">
+    <p>Las notificaciones se envían a tareas con vencimiento en 1 o 2 días</p>
+  </div>
+</div>
+
+
+  <!-- NOTIF MODAL -->
+  <div id="notifModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:300;align-items:center;justify-content:center;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:540px;width:94%;max-height:85vh;overflow-y:auto;position:relative;">
+      <div style="font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:1.2rem;letter-spacing:.08em;margin-bottom:6px;color:var(--text);">
+        📧 SELECCIONAR DESTINATARIOS
+      </div>
+      <div style="font-size:.74rem;color:var(--muted);margin-bottom:16px;">
+        Solo se envía a responsables con tareas venciendo en 1 o 2 días y con correo registrado.
+      </div>
+      <div id="notifList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;">
+        <div style="display:flex;gap:6px;">
+          <button onclick="notifSelectAll(true)"  style="padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);cursor:pointer;font-family:'Ubuntu',sans-serif;font-size:.75rem;">✓ Todos</button>
+          <button onclick="notifSelectAll(false)" style="padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);cursor:pointer;font-family:'Ubuntu',sans-serif;font-size:.75rem;">✕ Ninguno</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="closeNotifModal()" style="padding:8px 18px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);cursor:pointer;font-family:'Ubuntu',sans-serif;font-size:.82rem;">Cancelar</button>
+          <button id="btnSendNotif" onclick="sendSelectedNotifs()" style="padding:8px 20px;background:linear-gradient(135deg,var(--copper),var(--copper2));color:#000;border:none;border-radius:5px;font-family:'Ubuntu',sans-serif;font-weight:800;letter-spacing:-.03em;font-size:.9rem;letter-spacing:.08em;cursor:pointer;">📧 ENVIAR</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- ══ PAGE: CALENDARIO ══ -->
+<div class="page" id="page-calendario">
+  <div class="page-header">
+    <div>
+      <h2>CALENDARIO <span>DE TAREAS</span></h2>
+      <p class="page-sub">Visualiza vencimientos por día · Haz clic en cualquier fecha</p>
+    </div>
+    <div class="badge" id="calBadge"></div>
+  </div>
+
+  <!-- Filtro responsable -->
+  <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;">
+    <div class="fg"><span class="fl">Filtrar por responsable</span>
+      <select id="calResp" style="background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:6px 12px;font-family:'Ubuntu',sans-serif;font-size:.82rem;color:var(--text);outline:none;height:34px;" onchange="renderCalendar()">
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <div class="fg"><span class="fl">Filtrar por área</span>
+      <select id="calArea" style="background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:6px 12px;font-family:'Ubuntu',sans-serif;font-size:.82rem;color:var(--text);outline:none;height:34px;" onchange="renderCalendar()">
+        <option value="">Todas</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="cal-layout">
+    <!-- Calendario -->
+    <div class="cal-card">
+      <div class="cal-header">
+        <button class="cal-nav-btn" onclick="calPrevMonth()">‹</button>
+        <span class="cal-title" id="calMonthLabel"></span>
+        <button class="cal-nav-btn" onclick="calNextMonth()">›</button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-weekdays">
+          <div class="cal-wd">Dom</div><div class="cal-wd">Lun</div><div class="cal-wd">Mar</div>
+          <div class="cal-wd">Mié</div><div class="cal-wd">Jue</div><div class="cal-wd">Vie</div>
+          <div class="cal-wd">Sáb</div>
+        </div>
+        <div class="cal-days" id="calDays"></div>
+      </div>
+    </div>
+
+    <!-- Panel del día seleccionado -->
+    <div class="day-panel">
+      <div class="day-panel-header">
+        <div class="day-panel-title" id="dayPanelTitle">Selecciona un día</div>
+        <div class="day-panel-sub" id="dayPanelSub">Haz clic en cualquier fecha del calendario</div>
+      </div>
+      <div class="day-task-list" id="dayTaskList">
+        <div class="day-empty">Selecciona una fecha para ver las tareas</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Equipo · Calendario de Vencimientos</p>
+    <p id="calFooter"></p>
+  </div>
+</div>
+
+<script>
+const SUPA_URL='https://gzefeqrdadcftqpfmoea.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6ZWZlcXJkYWRjZnRxcGZtb2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTY4MTEsImV4cCI6MjA5MjM3MjgxMX0.lVG9HvYeN0ltve69qUCuwwBpmaolLSjQW5qsQXRdNVA';
+
+let AREAS=[
+  {id:'trabajo', label:'Trabajo', icon:'💼', stripe:'s-trabajo', color:'#3b82f6'},
+  {id:'personal',label:'Personal',icon:'🙂', stripe:'s-personal',color:'#a78bfa'},
+  {id:'salud',   label:'Salud',   icon:'💚', stripe:'s-salud',   color:'#10b981'},
+  {id:'hogar',   label:'Hogar',   icon:'🏠', stripe:'s-hogar',   color:'#f59e0b'},
+  {id:'otros',   label:'Otros',   icon:'✦',  stripe:'s-otros',   color:'#64748b'},
 ];
 
-let tasks = [];
-let af = {}; AREAS.forEach(a => af[a.id] = 'all');
-let currentSession = null; // { access_token, user }
-let authMode = 'login';
+let tasks=[];
+// area filter state: status, prio, date, sort
+let af={};
+AREAS.forEach(a=>af[a.id]={status:'all',prio:'',date:'',sub:'',resp:'',sortCol:'',sortDir:'asc'});
+let editingId=null;
 
-// ── DATE INIT ──────────────────────────────────────────────
-const today = new Date();
-document.getElementById('fDate').value = today.toISOString().split('T')[0];
-const ds = today.toLocaleDateString('es-CO', {weekday:'long', day:'numeric', month:'long'});
-document.getElementById('badgeDate').textContent = ds.replace(/^\w/, c => c.toUpperCase());
-document.getElementById('fDate2').textContent = 'Actualizado: ' + ds;
+const today=new Date(); today.setHours(0,0,0,0);
+document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
+const ds=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+const dsC=ds.replace(/^\w/,c=>c.toUpperCase());
+document.getElementById('badgeDate').textContent=dsC;
+document.getElementById('dashBadge').textContent=dsC;
+document.getElementById('fDate2').textContent='Actualizado: '+ds;
+document.getElementById('fDate3').textContent='Actualizado: '+ds;
 
-// ── HELPERS ────────────────────────────────────────────────
-function setSyncStatus(state, txt) {
-  document.getElementById('syncDot').className = 'sync-dot ' + state;
-  document.getElementById('syncTxt').textContent = txt;
+function setSyncStatus(s,t){
+  document.getElementById('syncDot').className='sync-dot '+s;
+  document.getElementById('syncTxt').textContent=t;
 }
 
-function isOv(d) { return d && new Date(d + 'T23:59:59') < today; }
-function fmtD(d) { if(!d) return ''; return new Date(d+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}); }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function isOv(d){return d&&new Date(d+'T23:59:59')<new Date();}
+function fmtD(d){if(!d)return '';return new Date(d+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'});}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-function onAreaChange() {
-  const isW = document.getElementById('fArea').value === 'trabajo';
-  document.getElementById('wResp').style.display = isW ? '' : 'none';
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='dash'){populateDashFilters();renderDash();}
+  if(id==='areas'){renderAreasList();}
+  if(id==='responsables'){renderRespList();autoCheckNotifications();}
+  if(id==='calendario'){populateCalFilters();renderCalendar();}
+}
+
+
+function populateRespDropdown(){
+  const sel = document.getElementById('fResp');
+  if(!sel) return;
+  const current = sel.value;
+  // Merge: from responsables list + from existing tasks
+  const fromResp = responsables.map(r=>r.nombre);
+  const fromTasks = [...new Set(tasks.filter(t=>t.resp).map(t=>t.resp))];
+  const all = [...new Set([...fromResp, ...fromTasks])].sort();
+  sel.innerHTML = '<option value="">— Seleccionar —</option>' +
+    all.map(n=>`<option value="${esc(n)}" ${current===n?'selected':''}>${esc(n)}</option>`).join('');
+}
+function onAreaChange(){
+  document.getElementById('wResp').style.display='';
 }
 onAreaChange();
 
-// ── AUTH UI ────────────────────────────────────────────────
-function switchTab(mode) {
-  authMode = mode;
-  document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
-  document.getElementById('tabRegister').classList.toggle('active', mode === 'register');
-  document.getElementById('authBtn').textContent = mode === 'login' ? 'ENTRAR' : 'CREAR CUENTA';
-  document.getElementById('authErr').textContent = '';
-  document.getElementById('authOk').textContent = '';
-}
-
-async function submitAuth() {
-  const email = document.getElementById('authEmail').value.trim();
-  const pass  = document.getElementById('authPass').value;
-  const btn   = document.getElementById('authBtn');
-  const errEl = document.getElementById('authErr');
-  const okEl  = document.getElementById('authOk');
-
-  if (!email || !pass) { errEl.textContent = 'Completa todos los campos.'; return; }
-  if (pass.length < 6) { errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.'; return; }
-
-  btn.disabled = true;
-  errEl.textContent = '';
-  okEl.textContent = '';
-
-  try {
-    if (authMode === 'login') {
-      const res = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`, {
-        method: 'POST',
-        headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password: pass }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error_description || data.msg || 'Error al iniciar sesión');
-      onLogin(data);
-    } else {
-      const res = await fetch(`${SUPA_URL}/auth/v1/signup`, {
-        method: 'POST',
-        headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password: pass }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error_description || data.msg || 'Error al registrarse');
-      if (data.access_token) {
-        onLogin(data);
-      } else {
-        okEl.textContent = 'Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.';
-        switchTab('login');
-      }
-    }
-  } catch(e) {
-    errEl.textContent = e.message;
-  }
-  btn.disabled = false;
-}
-
-function onLogin(session) {
-  currentSession = session;
-  document.getElementById('authScreen').style.display = 'none';
-  document.getElementById('userEmail').textContent = session.user.email;
-  loadTasks();
-}
-
-function logout() {
-  currentSession = null;
-  tasks = [];
-  document.getElementById('authScreen').style.display = 'flex';
-  document.getElementById('authEmail').value = '';
-  document.getElementById('authPass').value = '';
-  document.getElementById('authErr').textContent = '';
-  document.getElementById('authOk').textContent = '';
-  render();
-}
-
-// ── SUPABASE API ───────────────────────────────────────────
-async function sbFetch(method, path, body) {
-  const token = currentSession?.access_token || SUPA_KEY;
-  const res = await fetch(SUPA_URL + '/rest/v1/' + path, {
+async function sbFetch(method,path,body){
+  const res=await fetch(SUPA_URL+'/rest/v1/'+path,{
     method,
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + token,
-      'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'return=representation' : '',
+    headers:{
+      'apikey':SUPA_KEY,
+      'Authorization':'Bearer '+SUPA_KEY,
+      'Content-Type':'application/json',
+      'Prefer': method==='POST' ? 'return=minimal' : ''
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body:body?JSON.stringify(body):undefined,
   });
-  if (!res.ok) throw new Error(await res.text());
-  if (res.status === 204) return null;
-  return res.json();
+  if(!res.ok){ const err=await res.text(); console.error('sbFetch error',method,path,err); throw new Error(err); }
+  if(res.status===204||res.status===200&&method!=='GET') return null;
+  try{ return await res.json(); } catch(e){ return null; }
 }
 
-async function loadTasks() {
-  setSyncStatus('loading', 'Cargando\u2026');
-  try {
-    // RLS filtra automáticamente por user_id
-    const data = await sbFetch('GET', 'tareas?order=created_at.desc&select=*');
-    tasks = data || [];
-    setSyncStatus('ok', 'Sincronizado');
-    document.getElementById('loader').style.display = 'none';
+async function loadTasks(){
+  setSyncStatus('loading','Actualizando…');
+  try{
+    const loadRes = await sbFetch('GET','TAREAS?order=created_at.desc&select=*');
+    tasks = Array.isArray(loadRes) ? loadRes : [];
+    setSyncStatus('ok','Sincronizado ✓');
+    document.getElementById('loader').style.display='none';
     render();
-  } catch(e) {
-    setSyncStatus('err', 'Error de conexión');
-    document.getElementById('loader').style.display = 'none';
-    console.error(e);
+    populateRespDropdown();
+    if(document.getElementById('page-calendario')?.classList.contains('active')) renderCalendar();
+  }catch(e){
+    setSyncStatus('err','Error de conexión');
+    document.getElementById('loader').style.display='none';
   }
 }
 
-async function addTask() {
-  const text = document.getElementById('fTask').value.trim();
-  if (!text) return;
-  const btn = document.getElementById('btnAdd');
-  btn.disabled = true;
-  setSyncStatus('loading', 'Guardando\u2026');
-  const area = document.getElementById('fArea').value;
-  const newTask = {
+async function addTask(){
+  const text=document.getElementById('fTask').value.trim();
+  if(!text)return;
+  const btn=document.getElementById('btnAdd'); btn.disabled=true;
+  setSyncStatus('loading','Guardando…');
+  const area=document.getElementById('fArea').value;
+  const payload={
     text, area,
     sub:  document.getElementById('fSub').value.trim(),
     resp: document.getElementById('fResp').value.trim(),
     prio: document.getElementById('fPrio').value,
     date: document.getElementById('fDate').value,
-    done: false,
+    done: false
   };
-  try {
-    const res = await sbFetch('POST', 'tareas', newTask);
-    tasks.unshift(res[0]);
-    document.getElementById('fTask').value = '';
-    document.getElementById('fSub').value  = '';
-    document.getElementById('fResp').value = '';
-    setSyncStatus('ok', 'Guardado \u2713');
-    render();
-  } catch(e) {
-    setSyncStatus('err', 'Error al guardar');
-    console.error(e);
+  try{
+    const res = await fetch(SUPA_URL+'/rest/v1/TAREAS', {
+      method:'POST',
+      headers:{
+        'apikey':SUPA_KEY,
+        'Authorization':'Bearer '+SUPA_KEY,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok){ const err=await res.text(); throw new Error(err); }
+    document.getElementById('fTask').value='';
+    document.getElementById('fSub').value='';
+    document.getElementById('fResp').selectedIndex=0;
+    setSyncStatus('ok','Guardado ✓');
+    await loadTasks();
+  }catch(e){
+    console.error('addTask error:', e);
+    setSyncStatus('err','Error al guardar: '+e.message);
+    alert('Error al guardar: '+e.message);
   }
-  btn.disabled = false;
+  btn.disabled=false;
 }
 
-async function toggleDone(id) {
-  const t = tasks.find(t => t.id === id);
-  if (!t) return;
-  const newDone = !t.done;
-  t.done = newDone;
+async function toggleDone(id){
+  const t=tasks.find(t=>t.id===id); if(!t)return;
+  t.done=!t.done; render();
+  setSyncStatus('loading','Actualizando…');
+  try{await sbFetch('PATCH',`TAREAS?id=eq.${id}`,{done:t.done});setSyncStatus('ok','Sincronizado ✓');}
+  catch(e){t.done=!t.done;setSyncStatus('err','Error');render();}
+}
+
+async function delTask(id){
+  if(!confirm('¿Eliminar esta tarea?'))return;
+  const prev=[...tasks]; tasks=tasks.filter(t=>t.id!==id); render();
+  setSyncStatus('loading','Eliminando…');
+  try{await sbFetch('DELETE',`TAREAS?id=eq.${id}`);setSyncStatus('ok','Eliminado ✓');}
+  catch(e){tasks=prev;setSyncStatus('err','Error');render();}
+}
+
+// ── EDIT ──
+function startEdit(id){
+  editingId=id; render();
+}
+
+async function saveEdit(id){
+  const t=tasks.find(t=>t.id===id); if(!t)return;
+  const newText=document.getElementById('eText_'+id)?.value.trim()||t.text;
+  const newSub =document.getElementById('eSub_'+id)?.value.trim()||'';
+  const newResp=document.getElementById('eResp_'+id)?.value.trim()||'';
+  const newPrio=document.getElementById('ePrio_'+id)?.value||t.prio;
+  const newDate=document.getElementById('eDate_'+id)?.value||t.date;
+  const newArea=document.getElementById('eArea_'+id)?.value||t.area;
+
+  Object.assign(t,{text:newText,sub:newSub,resp:newResp,prio:newPrio,date:newDate,area:newArea});
+  editingId=null; render();
+  setSyncStatus('loading','Guardando cambios…');
+  try{
+    await sbFetch('PATCH',`TAREAS?id=eq.${id}`,{text:t.text,sub:t.sub,resp:t.resp,prio:t.prio,date:t.date,area:t.area});
+    setSyncStatus('ok','Guardado ✓');
+  }catch(e){setSyncStatus('err','Error al guardar');}
+}
+
+function cancelEdit(){editingId=null;render();}
+
+// ── FILTER & SORT ──
+function setStatus(aId,f){
+  af[aId].status=f;
   render();
-  setSyncStatus('loading', 'Actualizando\u2026');
-  try {
-    await sbFetch('PATCH', `tareas?id=eq.${id}`, { done: newDone });
-    setSyncStatus('ok', 'Sincronizado');
-  } catch(e) {
-    t.done = !newDone;
-    setSyncStatus('err', 'Error al actualizar');
-    render();
+}
+
+function setPrioFilter(aId,f){
+  af[aId].prio=f;
+  render();
+}
+
+function setDateFilter(aId,f){
+  af[aId].date=f;
+  render();
+}
+
+
+
+function setSubFilter(aId,f){
+  af[aId].sub=f;
+  render();
+}
+
+function setRespFilter(aId,f){
+  af[aId].resp=f;
+  render();
+}
+function clearAreaFilters(aId){
+  af[aId].status='all'; af[aId].prio=''; af[aId].date=''; af[aId].sub=''; af[aId].resp='';
+  render();
+}
+function setSort(aId,col){
+  if(af[aId].sortCol===col){af[aId].sortDir=af[aId].sortDir==='asc'?'desc':'asc';}
+  else{af[aId].sortCol=col;af[aId].sortDir='asc';}
+  render();
+}
+
+function applyFiltersSort(aId,items){
+  const s=af[aId];
+  let r=[...items];
+  // status
+  if(s.status==='pending') r=r.filter(t=>!t.done);
+  else if(s.status==='done') r=r.filter(t=>t.done);
+  else if(s.status==='overdue') r=r.filter(t=>!t.done&&isOv(t.date));
+  // prio
+  if(s.prio) r=r.filter(t=>t.prio===s.prio);
+  // sub
+  if(s.sub) r=r.filter(t=>t.sub===s.sub);
+  // resp
+  if(s.resp) r=r.filter(t=>t.resp===s.resp);
+  // date
+  if(s.date==='today') r=r.filter(t=>t.date===new Date().toISOString().split('T')[0]);
+  else if(s.date==='week'){
+    const end=new Date(); end.setDate(end.getDate()+7);
+    r=r.filter(t=>t.date&&new Date(t.date+'T12:00:00')<=end&&!isOv(t.date));
   }
-}
-
-async function delTask(id) {
-  const prev = [...tasks];
-  tasks = tasks.filter(t => t.id !== id);
-  render();
-  setSyncStatus('loading', 'Eliminando\u2026');
-  try {
-    await sbFetch('DELETE', `tareas?id=eq.${id}`);
-    setSyncStatus('ok', 'Eliminado \u2713');
-  } catch(e) {
-    tasks = prev;
-    setSyncStatus('err', 'Error al eliminar');
-    render();
+  else if(s.date==='overdue') r=r.filter(t=>!t.done&&isOv(t.date));
+  // sort
+  if(s.sortCol){
+    r.sort((a,b)=>{
+      let va=a[s.sortCol]||'', vb=b[s.sortCol]||'';
+      const cmp=va.toString().localeCompare(vb.toString());
+      return s.sortDir==='asc'?cmp:-cmp;
+    });
   }
+  return r;
 }
 
-function setFilter(aId, f, btn) {
-  af[aId] = f;
-  btn.closest('.filter-tabs').querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
+// ── RENDER TASKS ──
+function render(){
+  const total=tasks.length;
+  const done=tasks.filter(t=>t.done).length;
+  const overdue=tasks.filter(t=>!t.done&&isOv(t.date)).length;
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('kT').textContent=total;
+  document.getElementById('kP').textContent=total-done;
+  document.getElementById('kD').textContent=done;
+  document.getElementById('kO').textContent=overdue;
+  document.getElementById('pPct').textContent=pct+'%';
+  document.getElementById('pFill').style.width=pct+'%';
 
-function render() {
-  const total   = tasks.length;
-  const done    = tasks.filter(t => t.done).length;
-  const pend    = total - done;
-  const overdue = tasks.filter(t => !t.done && isOv(t.date)).length;
-  const pct     = total ? Math.round(done / total * 100) : 0;
+  const board=document.getElementById('board');
+  board.innerHTML='';
 
-  document.getElementById('kT').textContent = total;
-  document.getElementById('kP').textContent = pend;
-  document.getElementById('kD').textContent = done;
-  document.getElementById('kO').textContent = overdue;
-  document.getElementById('pPct').textContent = pct + '%';
-  document.getElementById('pFill').style.width = pct + '%';
+  AREAS.forEach(area=>{
+    const isW=true; // Responsable visible en todas las áreas
+    const all=tasks.filter(t=>t.area===area.id);
+    const pC=all.filter(t=>!t.done).length;
+    const oC=all.filter(t=>!t.done&&isOv(t.date)).length;
+    const vis=applyFiltersSort(area.id,all);
+    const s=af[area.id];
+    const cols=isW?8:7;
 
-  const board = document.getElementById('board');
-  board.innerHTML = '';
+    const block=document.createElement('div');
+    block.className='area-block';
 
-  AREAS.forEach(area => {
-    const isW  = area.id === 'trabajo';
-    const all  = tasks.filter(t => t.area === area.id);
-    const pC   = all.filter(t => !t.done).length;
-    const f    = af[area.id];
-    const vis  = f==='pending' ? all.filter(t=>!t.done) : f==='done' ? all.filter(t=>t.done) : all;
-    const cols = isW ? 7 : 6;
+    const statusActive=s.status;
+    const sAll=statusActive==='all'?'active':'';
+    const sPend=statusActive==='pending'?'active-amb':'';
+    const sDone=statusActive==='done'?'active':'';
+    const sOv=statusActive==='overdue'?'active-red':'';
 
-    const block = document.createElement('div');
-    block.className = 'area-block';
-    block.innerHTML = `
+    block.innerHTML=`
       <div class="area-head">
         <div class="area-stripe ${area.stripe}"></div>
         <span class="area-name">${area.icon} ${area.label}</span>
-        <div class="filter-tabs">
-          <button class="ftab ${f==='all'?'active':''}"     onclick="setFilter('${area.id}','all',this)">Todas</button>
-          <button class="ftab ${f==='pending'?'active':''}" onclick="setFilter('${area.id}','pending',this)">Pendientes</button>
-          <button class="ftab ${f==='done'?'active':''}"    onclick="setFilter('${area.id}','done',this)">Listas</button>
+        <div class="area-dropdowns">
+          <div class="fg"><span class="fl">Estado</span>
+            <select class="area-sel" onchange="setStatus('${area.id}',this.value)">
+              <option value="all"     ${s.status==='all'?'selected':''}>Todas</option>
+              <option value="pending" ${s.status==='pending'?'selected':''}>Pendientes</option>
+              <option value="done"    ${s.status==='done'?'selected':''}>Listas</option>
+              <option value="overdue" ${s.status==='overdue'?'selected':''}>Vencidas</option>
+            </select>
+          </div>
+          <div class="fg"><span class="fl">Prioridad</span>
+            <select class="area-sel" onchange="setPrioFilter('${area.id}',this.value)">
+              <option value=""      ${!s.prio?'selected':''}>Todas</option>
+              <option value="alta"  ${s.prio==='alta'?'selected':''}>Alta</option>
+              <option value="media" ${s.prio==='media'?'selected':''}>Media</option>
+              <option value="baja"  ${s.prio==='baja'?'selected':''}>Baja</option>
+            </select>
+          </div>
+          <div class="fg"><span class="fl">Fecha</span>
+            <select class="area-sel" onchange="setDateFilter('${area.id}',this.value)">
+              <option value=""        ${!s.date?'selected':''}>Todas</option>
+              <option value="today"   ${s.date==='today'?'selected':''}>Hoy</option>
+              <option value="week"    ${s.date==='week'?'selected':''}>7 días</option>
+              <option value="overdue" ${s.date==='overdue'?'selected':''}>Vencidas</option>
+            </select>
+          </div>
+          <div class="fg"><span class="fl">Subárea</span>
+            <select class="area-sel" id="sel-sub-${area.id}" onchange="setSubFilter('${area.id}',this.value)">
+              <option value="">Todas</option>
+            </select>
+          </div>
+          <div class="fg"><span class="fl">Responsable</span>
+            <select class="area-sel" id="sel-resp-${area.id}" onchange="setRespFilter('${area.id}',this.value)">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <button class="btn-clear-area" onclick="clearAreaFilters('${area.id}')">↺ Limpiar</button>
         </div>
-        <span class="pend-badge">${pC} pendiente${pC!==1?'s':''}</span>
+        <span class="pend-badge">${pC} pend · ${oC} venc</span>
       </div>
       <table>
         <thead><tr>
-          <th style="width:36px"></th>
-          <th>Tarea</th>
-          <th>Sub\u00e1rea</th>
-          ${isW ? '<th>Responsable</th>' : ''}
-          <th>Prioridad</th>
-          <th>Fecha l\u00edmite</th>
-          <th style="width:36px"></th>
+          <th class="no-sort" style="width:36px"></th>
+          <th onclick="setSort('${area.id}','text')" class="${s.sortCol==='text'?'sort-'+s.sortDir:''}">Tarea</th>
+          <th onclick="setSort('${area.id}','sub')"  class="${s.sortCol==='sub'?'sort-'+s.sortDir:''}">Subárea</th>
+          ${isW?`<th onclick="setSort('${area.id}','resp')" class="${s.sortCol==='resp'?'sort-'+s.sortDir:''}">Responsable</th>`:''}
+          <th onclick="setSort('${area.id}','prio')" class="${s.sortCol==='prio'?'sort-'+s.sortDir:''}">Prioridad</th>
+          <th onclick="setSort('${area.id}','date')" class="${s.sortCol==='date'?'sort-'+s.sortDir:''}">Fecha límite</th>
+          <th class="no-sort" style="width:70px"></th>
         </tr></thead>
         <tbody id="tb-${area.id}"></tbody>
       </table>
     `;
     board.appendChild(block);
 
-    const tb = document.getElementById('tb-' + area.id);
-    if (vis.length === 0) {
-      const r = document.createElement('tr');
-      r.className = 'empty-row';
-      r.innerHTML = `<td colspan="${cols}">Sin tareas en esta vista.</td>`;
-      tb.appendChild(r);
-      return;
+    // Populate sub and resp dropdowns dynamically
+    const selSub = document.getElementById('sel-sub-'+area.id);
+    const selResp = document.getElementById('sel-resp-'+area.id);
+    if(selSub){
+      const subs=[...new Set(tasks.filter(t=>t.area===area.id&&t.sub).map(t=>t.sub))].sort();
+      subs.forEach(v=>{
+        const o=document.createElement('option');
+        o.value=v; o.textContent=v;
+        if(af[area.id].sub===v) o.selected=true;
+        selSub.appendChild(o);
+      });
+    }
+    if(selResp){
+      const resps=[...new Set(tasks.filter(t=>t.area===area.id&&t.resp).map(t=>t.resp))].sort();
+      resps.forEach(v=>{
+        const o=document.createElement('option');
+        o.value=v; o.textContent=v;
+        if(af[area.id].resp===v) o.selected=true;
+        selResp.appendChild(o);
+      });
     }
 
-    vis.forEach(t => {
-      const od = !t.done && isOv(t.date);
-      const tr = document.createElement('tr');
-      if (t.done) tr.classList.add('done');
-      tr.innerHTML = `
-        <td><div class="chk ${t.done?'on':''}" onclick="toggleDone(${t.id})"></div></td>
-        <td class="t-name">${esc(t.text)}</td>
-        <td>${t.sub ? `<span class="sub-tag">${esc(t.sub)}</span>` : '<span style="color:var(--border)">\u2014</span>'}</td>
-        ${isW ? `<td class="resp-val">${t.resp ? esc(t.resp) : '<span style="color:var(--border)">\u2014</span>'}</td>` : ''}
-        <td><span class="prio-tag p-${t.prio}">${t.prio}</span></td>
-        <td class="date-val ${od?'ov':''}">${od?'\u26a0 ':''}${fmtD(t.date)}</td>
-        <td><button class="del-btn" onclick="delTask(${t.id})">\u00d7</button></td>
-      `;
+    const tb=document.getElementById('tb-'+area.id);
+    if(vis.length===0){
+      const r=document.createElement('tr');
+      r.className='empty-row';
+      r.innerHTML=`<td colspan="${cols}">Sin tareas en esta vista.</td>`;
+      tb.appendChild(r); return;
+    }
+
+    vis.forEach(t=>{
+      const od=!t.done&&isOv(t.date);
+      const isEditing=editingId===t.id;
+      const tr=document.createElement('tr');
+      if(t.done)tr.classList.add('done');
+
+      if(isEditing){
+        tr.innerHTML=`
+          <td><div class="chk ${t.done?'on':''}" onclick="toggleDone(${t.id})"></div></td>
+          <td><input class="edit-input" id="eText_${t.id}" value="${esc(t.text)}"></td>
+          <td><input class="edit-input" id="eSub_${t.id}" value="${esc(t.sub||'')}"></td>
+          ${isW?`<td><input class="edit-input" id="eResp_${t.id}" value="${esc(t.resp||'')}"></td>`:''}
+          <td><select class="edit-select" id="ePrio_${t.id}">
+            <option value="alta" ${t.prio==='alta'?'selected':''}>Alta</option>
+            <option value="media" ${t.prio==='media'?'selected':''}>Media</option>
+            <option value="baja" ${t.prio==='baja'?'selected':''}>Baja</option>
+          </select></td>
+          <td><input class="edit-input" id="eDate_${t.id}" type="date" value="${t.date||''}"></td>
+          <td>
+            <div class="edit-actions">
+              <button class="btn-save" onclick="saveEdit(${t.id})">✓</button>
+              <button class="btn-cancel" onclick="cancelEdit()">✕</button>
+            </div>
+          </td>
+        `;
+      } else {
+        tr.innerHTML=`
+          <td><div class="chk ${t.done?'on':''}" onclick="toggleDone(${t.id})"></div></td>
+          <td class="t-name">${esc(t.text)}</td>
+          <td>${t.sub?`<span class="sub-tag">${esc(t.sub)}</span>`:'<span style="color:var(--subtle)">—</span>'}</td>
+          ${isW?`<td class="resp-val">${t.resp?esc(t.resp):'<span style="color:var(--subtle)">—</span>'}</td>`:''}
+          <td><span class="prio-tag p-${t.prio}">${t.prio}</span></td>
+          <td class="date-val ${od?'ov':''}">${od?'⚠ ':''}${fmtD(t.date)}</td>
+          <td style="white-space:nowrap">
+            <button class="edit-btn" onclick="startEdit(${t.id})" title="Editar">✎</button>
+            <button class="del-btn"  onclick="delTask(${t.id})"   title="Eliminar">×</button>
+          </td>
+        `;
+      }
       tb.appendChild(tr);
     });
   });
 }
 
-// Auto-refresh cada 30 segundos (solo si hay sesión)
-setInterval(() => { if (currentSession) loadTasks(); }, 30000);
+// ── DASHBOARD ──
+function populateDashFilters(){
+  const subs=[...new Set(tasks.map(t=>t.sub).filter(Boolean))].sort();
+  const resps=[...new Set(tasks.map(t=>t.resp).filter(Boolean))].sort();
+  const dSub=document.getElementById('dSub');
+  const dResp=document.getElementById('dResp');
+  const prevSub=dSub.value, prevResp=dResp.value;
+  dSub.innerHTML='<option value="">Todas</option>'+subs.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  dResp.innerHTML='<option value="">Todos</option>'+resps.map(r=>`<option value="${esc(r)}">${esc(r)}</option>`).join('');
+  dSub.value=prevSub; dResp.value=prevResp;
+}
+
+function resetDashFilters(){
+  ['dArea','dSub','dResp','dPrio','dStatus'].forEach(id=>document.getElementById(id).value='');
+  renderDash();
+}
+
+function dashFiltered(){
+  const area=document.getElementById('dArea').value;
+  const sub=document.getElementById('dSub').value;
+  const resp=document.getElementById('dResp').value;
+  const prio=document.getElementById('dPrio').value;
+  const status=document.getElementById('dStatus').value;
+  return tasks.filter(t=>{
+    if(area&&t.area!==area)return false;
+    if(sub&&t.sub!==sub)return false;
+    if(resp&&t.resp!==resp)return false;
+    if(prio&&t.prio!==prio)return false;
+    if(status==='pending'&&t.done)return false;
+    if(status==='done'&&!t.done)return false;
+    if(status==='overdue'&&(t.done||!isOv(t.date)))return false;
+    return true;
+  });
+}
+
+function renderDash(){
+  const ft=dashFiltered();
+  const total=ft.length;
+  const done=ft.filter(t=>t.done).length;
+  const pend=total-done;
+  const overdue=ft.filter(t=>!t.done&&isOv(t.date)).length;
+  const pct=total?Math.round(done/total*100):0;
+
+  document.getElementById('dkT').textContent=total;
+  document.getElementById('dkP').textContent=pend;
+  document.getElementById('dkD').textContent=done;
+  document.getElementById('dkO').textContent=overdue;
+  document.getElementById('dpPct').textContent=pct+'%';
+  document.getElementById('dpFill').style.width=pct+'%';
+
+  // Progress por área
+  const areaProg=document.getElementById('dAreaProg');
+  areaProg.innerHTML='';
+  AREAS.forEach(a=>{
+    const at=ft.filter(t=>t.area===a.id);
+    if(!at.length)return;
+    const ad=at.filter(t=>t.done).length;
+    const ap=at.length?Math.round(ad/at.length*100):0;
+    areaProg.innerHTML+=`
+      <div class="pl-row">
+        <div class="pl-head"><span>${a.icon} ${a.label} (${at.length})</span><span class="pl-pct">${ap}%</span></div>
+        <div class="pl-track"><div class="pl-fill" style="width:${ap}%;background:${a.color}"></div></div>
+      </div>`;
+  });
+  if(!areaProg.innerHTML)areaProg.innerHTML='<p style="color:var(--muted);font-size:.78rem;font-style:italic">Sin datos</p>';
+
+  // Donut por prioridad
+  const prioData=[
+    {label:'Alta',  key:'alta',  color:'#f43f5e'},
+    {label:'Media', key:'media', color:'#f59e0b'},
+    {label:'Baja',  key:'baja',  color:'#10b981'},
+  ];
+  const prioTotals=prioData.map(p=>({...p,n:ft.filter(t=>t.prio===p.key).length}));
+  const prioSum=prioTotals.reduce((s,p)=>s+p.n,0);
+  const svg=document.getElementById('donutSvg');
+  const legend=document.getElementById('donutLegend');
+  svg.innerHTML=''; legend.innerHTML='';
+  if(prioSum){
+    const cx=80,cy=80,r=58,r2=34;
+    let angle=-Math.PI/2;
+    prioTotals.forEach(p=>{
+      if(!p.n)return;
+      const sweep=2*Math.PI*(p.n/prioSum);
+      const x1=cx+r*Math.cos(angle), y1=cy+r*Math.sin(angle);
+      const x2=cx+r*Math.cos(angle+sweep), y2=cy+r*Math.sin(angle+sweep);
+      const xi1=cx+r2*Math.cos(angle), yi1=cy+r2*Math.sin(angle);
+      const xi2=cx+r2*Math.cos(angle+sweep), yi2=cy+r2*Math.sin(angle+sweep);
+      const large=sweep>Math.PI?1:0;
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',`M${xi1} ${yi1} L${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} L${xi2} ${yi2} A${r2} ${r2} 0 ${large} 0 ${xi1} ${yi1} Z`);
+      path.setAttribute('fill',p.color); path.setAttribute('opacity','0.9');
+      svg.appendChild(path); angle+=sweep;
+    });
+    const circ=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circ.setAttribute('cx',cx);circ.setAttribute('cy',cy);circ.setAttribute('r',r2-2);
+    const isLightMode=document.body.classList.contains('light');
+    circ.setAttribute('fill',isLightMode?'#ffffff':'#0f1623');svg.appendChild(circ);
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x',cx);txt.setAttribute('y',cy+6);txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('fill',document.body.classList.contains('light')?'#0f172a':'#eaf0fb');txt.setAttribute('font-size','18');txt.setAttribute('font-family','Ubuntu');txt.setAttribute('font-weight','800');
+    txt.textContent=prioSum;svg.appendChild(txt);
+  }
+  prioTotals.forEach(p=>{
+    legend.innerHTML+=`<div class="dleg-item"><div class="dleg-dot" style="background:${p.color}"></div>${p.label}: ${p.n}</div>`;
+  });
+
+  // Bar por subárea
+  const subBar=document.getElementById('dSubBar');
+  subBar.innerHTML='';
+  const subMap={};
+  ft.forEach(t=>{const k=t.sub||'(Sin subárea)';subMap[k]=(subMap[k]||0)+1;});
+  const subEntries=Object.entries(subMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const subMax=subEntries[0]?.[1]||1;
+  subEntries.forEach(([k,v])=>{
+    subBar.innerHTML+=`<div class="bc-row">
+      <span class="bc-label" title="${esc(k)}">${esc(k)}</span>
+      <div class="bc-track"><div class="bc-fill" style="width:${v/subMax*100}%;background:var(--blue)"></div></div>
+      <span class="bc-val">${v}</span></div>`;
+  });
+  if(!subEntries.length)subBar.innerHTML='<p style="color:var(--muted);font-size:.78rem;font-style:italic">Sin datos</p>';
+
+  // Bar por responsable
+  const respBar=document.getElementById('dRespBar');
+  respBar.innerHTML='';
+  const respMap={};
+  ft.forEach(t=>{if(!t.resp)return;respMap[t.resp]=(respMap[t.resp]||0)+1;});
+  const respDoneMap={};
+  ft.filter(t=>t.done).forEach(t=>{if(!t.resp)return;respDoneMap[t.resp]=(respDoneMap[t.resp]||0)+1;});
+  const respEntries=Object.entries(respMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const respMax=respEntries[0]?.[1]||1;
+  respEntries.forEach(([k,v])=>{
+    const d=respDoneMap[k]||0;
+    const pct2=Math.round(d/v*100);
+    respBar.innerHTML+=`<div class="bc-row">
+      <span class="bc-label" title="${esc(k)}">${esc(k)}</span>
+      <div class="bc-track"><div class="bc-fill" style="width:${v/respMax*100}%;background:var(--purple)"></div></div>
+      <span class="bc-val">${v} <span style="color:var(--green);font-size:.65rem">(${pct2}%✓)</span></span></div>`;
+  });
+  if(!respEntries.length)respBar.innerHTML='<p style="color:var(--muted);font-size:.78rem;font-style:italic">Sin responsables asignados</p>';
+
+  // Semáforo
+  renderSemaforo(ft);
+
+  // Timeline próximos vencimientos
+  // Timeline con ordenamiento
+  let tlSortCol='date', tlSortDir='asc';
+
+  function renderTimeline(data){
+    const timeline=document.getElementById('dTimeline');
+    if(!timeline) return;
+    if(!data.length){
+      timeline.innerHTML='<p style="color:var(--muted);font-size:.78rem;font-style:italic;padding:8px 0">Sin vencimientos próximos</p>';
+      return;
+    }
+    const thStyle='padding:8px 12px;font-size:.61rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border);text-align:left;cursor:pointer;user-select:none;';
+    const sortArrow=(col)=> tlSortCol===col ? (tlSortDir==='asc'?' ↑':' ↓') : '';
+    timeline.innerHTML=`<table style="width:100%;border-collapse:collapse;">
+      <thead><tr>
+        <th style="${thStyle}" onclick="tlSort('text',ft_cache)"  >Tarea${sortArrow('text')}</th>
+        <th style="${thStyle}" onclick="tlSort('area',ft_cache)"  >Área${sortArrow('area')}</th>
+        <th style="${thStyle}" onclick="tlSort('resp',ft_cache)"  >Responsable${sortArrow('resp')}</th>
+        <th style="${thStyle}" onclick="tlSort('prio',ft_cache)"  >Prioridad${sortArrow('prio')}</th>
+        <th style="${thStyle}" onclick="tlSort('date',ft_cache)"  >Fecha${sortArrow('date')}</th>
+      </tr></thead>
+      <tbody>${data.map(t=>{
+        const od=isOv(t.date);
+        const aInfo=AREAS.find(a=>a.id===t.area);
+        return `<tr style="border-bottom:1px solid rgba(37,48,71,.5)">
+          <td style="padding:8px 12px;font-size:.82rem;color:var(--text)">${esc(t.text)}</td>
+          <td style="padding:8px 12px;font-size:.78rem;color:var(--muted)">${aInfo?aInfo.icon+' '+aInfo.label:t.area}</td>
+          <td style="padding:8px 12px;font-size:.78rem;color:var(--muted)">${esc(t.resp||'—')}</td>
+          <td style="padding:8px 12px"><span class="prio-tag p-${t.prio}">${t.prio}</span></td>
+          <td style="padding:8px 12px;font-size:.74rem" class="${od?'date-val ov':'date-val'}">${od?'⚠ ':''}${fmtD(t.date)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+
+  let ft_cache = ft.filter(t=>!t.done&&t.date).sort((a,b)=>a.date.localeCompare(b.date));
+  renderTimeline(ft_cache);
+
+  window.tlSort = function(col, data){
+    if(tlSortCol===col){ tlSortDir=tlSortDir==='asc'?'desc':'asc'; }
+    else{ tlSortCol=col; tlSortDir='asc'; }
+    ft_cache = [...ft_cache].sort((a,b)=>{
+      const va=String(a[col]||''), vb=String(b[col]||'');
+      return tlSortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);
+    });
+    renderTimeline(ft_cache);
+  };
+}
+
+
+// ── EXCEL IMPORT ──
+let importRows = [];
+
+function parseExcelDate(val) {
+  if (!val) return '';
+  // If already YYYY-MM-DD string
+  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+  // If Excel serial number
+  if (typeof val === 'number') {
+    const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+    return d.toISOString().split('T')[0];
+  }
+  // Try to parse "DD de MMM" Spanish format or any date string
+  if (typeof val === 'string') {
+    const months = {enero:0,febrero:1,marzo:2,abril:3,mayo:4,junio:5,julio:6,agosto:7,septiembre:8,octubre:9,noviembre:10,diciembre:11,
+      ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
+    const m = val.toLowerCase().match(/(\d+)\s+de\s+(\w+)(?:\s+(\d{4}))?/);
+    if (m) {
+      const day = parseInt(m[1]);
+      const mon = months[m[2]];
+      const year = m[3] ? parseInt(m[3]) : new Date().getFullYear();
+      if (mon !== undefined) {
+        return new Date(year, mon, day).toISOString().split('T')[0];
+      }
+    }
+    // Try native parse
+    const d = new Date(val);
+    if (!isNaN(d)) return d.toISOString().split('T')[0];
+  }
+  return '';
+}
+
+function importExcel(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array', cellDates:false});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+
+      importRows = [];
+      const errors = [];
+
+      rows.forEach((row, i) => {
+        // Normalize keys (case insensitive, trim)
+        const norm = {};
+        Object.keys(row).forEach(k => norm[k.toLowerCase().trim()] = row[k]);
+
+        const text = String(norm['tarea'] || norm['task'] || '').trim();
+        if (!text) { errors.push(`Fila ${i+2}: sin tarea`); return; }
+
+        const areaRaw = String(norm['área'] || norm['area'] || 'trabajo').toLowerCase().trim();
+        const areaMap = {trabajo:'trabajo',personal:'personal',salud:'salud',hogar:'hogar',otros:'otros',
+          work:'trabajo',health:'salud',home:'hogar',other:'otros'};
+        const area = areaMap[areaRaw] || 'trabajo';
+
+        const sub  = String(norm['subárea'] || norm['subarea'] || norm['sub'] || '').trim();
+        const resp = String(norm['responsable'] || norm['resp'] || norm['responsible'] || '').trim();
+
+        const prioRaw = String(norm['prioridad'] || norm['priority'] || norm['prio'] || 'media').toLowerCase().trim();
+        const prio = ['alta','media','baja'].includes(prioRaw) ? prioRaw : 'media';
+
+        const dateRaw = norm['fecha límite'] || norm['fecha limite'] || norm['fecha'] || norm['date'] || '';
+        const date = parseExcelDate(dateRaw);
+
+        importRows.push({text, area, sub, resp, prio, date, done: false});
+      });
+
+      // Show preview modal
+      const modal = document.getElementById('importModal');
+      document.getElementById('importCount').textContent = `— ${importRows.length} tareas`;
+      document.getElementById('importMsg').textContent = errors.length ? `⚠ ${errors.join(' | ')}` : `✓ Archivo leído correctamente`;
+
+      const prev = document.getElementById('importPreview');
+      prev.innerHTML = `<table style="width:100%;border-collapse:collapse;">
+        <thead><tr>
+          <th style="padding:5px 8px;text-align:left;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">Tarea</th>
+          <th style="padding:5px 8px;text-align:left;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">Área</th>
+          <th style="padding:5px 8px;text-align:left;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">Subárea</th>
+          <th style="padding:5px 8px;text-align:left;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">Resp.</th>
+          <th style="padding:5px 8px;text-align:left;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">Prio</th>
+          <th style="padding:5px 8px;text-align:left;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border)">Fecha</th>
+        </tr></thead>
+        <tbody>${importRows.map(r=>`<tr style="border-bottom:1px solid rgba(37,48,71,.4)">
+          <td style="padding:5px 8px;color:var(--text)">${esc(r.text)}</td>
+          <td style="padding:5px 8px;color:var(--muted)">${r.area}</td>
+          <td style="padding:5px 8px;color:var(--muted)">${esc(r.sub||'—')}</td>
+          <td style="padding:5px 8px;color:var(--muted)">${esc(r.resp||'—')}</td>
+          <td style="padding:5px 8px"><span class="prio-tag p-${r.prio}">${r.prio}</span></td>
+          <td style="padding:5px 8px;color:var(--muted)">${r.date||'—'}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+
+      modal.style.display = 'flex';
+    } catch(err) {
+      alert('Error leyendo el archivo: ' + err.message);
+    }
+    input.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function closeImport() {
+  document.getElementById('importModal').style.display = 'none';
+  importRows = [];
+}
+
+async function confirmImport() {
+  if (!importRows.length) return;
+  const btn = document.getElementById('btnConfirmImport');
+  btn.disabled = true;
+  btn.textContent = 'Insertando…';
+  setSyncStatus('loading', `Importando ${importRows.length} tareas…`);
+  try {
+    // bulk insert — use minimal return to avoid payload issues
+    const bulkRes = await fetch(SUPA_URL+'/rest/v1/TAREAS', {
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,
+        'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(importRows)
+    });
+    if(!bulkRes.ok) throw new Error(await bulkRes.text());
+    setSyncStatus('ok', `${importRows.length} tareas importadas ✓`);
+    closeImport();
+    await loadTasks();
+  } catch(e) {
+    setSyncStatus('err', 'Error al importar');
+    alert('Error: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = '✓ INSERTAR TODAS';
+}
+
+
+
+
+
+// ── THEME TOGGLE ──
+function toggleTheme(){
+  const isLight = document.body.classList.toggle('light');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  updateThemeBtn(isLight);
+}
+
+function updateThemeBtn(isLight){
+  const btn = document.getElementById('themeToggle');
+  if(btn) btn.innerHTML = isLight ? '🌙 Dark' : '☀️ Light';
+}
+
+function loadTheme(){
+  const saved = localStorage.getItem('theme');
+  const isLight = saved === 'light';
+  if(isLight) document.body.classList.add('light');
+  updateThemeBtn(isLight);
+}
+
+// ── CALENDARIO ──
+let calYear  = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calSelectedDate = new Date().toISOString().split('T')[0];
+
+const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const PRIO_COLORS = {alta:'#ff4f5e', media:'#f5c842', baja:'#00d4aa'};
+
+function calPrevMonth(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
+function calNextMonth(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+
+function populateCalFilters(){
+  const respSel = document.getElementById('calResp');
+  const areaSel = document.getElementById('calArea');
+  if(!respSel||!areaSel) return;
+  const prevResp = respSel.value, prevArea = areaSel.value;
+
+  const resps = [...new Set(tasks.filter(t=>t.resp).map(t=>t.resp))].sort();
+  respSel.innerHTML = '<option value="">Todos</option>' +
+    resps.map(r=>`<option value="${esc(r)}" ${prevResp===r?'selected':''}>${esc(r)}</option>`).join('');
+
+  areaSel.innerHTML = '<option value="">Todas</option>' +
+    AREAS.map(a=>`<option value="${a.id}" ${prevArea===a.id?'selected':''}>${a.icon} ${a.label}</option>`).join('');
+}
+
+function getCalTasks(){
+  const resp = document.getElementById('calResp')?.value||'';
+  const area = document.getElementById('calArea')?.value||'';
+  return tasks.filter(t=>{
+    if(resp && t.resp!==resp) return false;
+    if(area && t.area!==area) return false;
+    return true;
+  });
+}
+
+function renderCalendar(){
+  const label = document.getElementById('calMonthLabel');
+  if(label) label.textContent = MONTHS_ES[calMonth] + ' ' + calYear;
+
+  const calDays = document.getElementById('calDays');
+  if(!calDays) return;
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const filtered = getCalTasks();
+
+  // Build date→tasks map
+  const dateMap = {};
+  filtered.forEach(t=>{
+    if(!t.date) return;
+    if(!dateMap[t.date]) dateMap[t.date]=[];
+    dateMap[t.date].push(t);
+  });
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+
+  let html = '';
+  let totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+  for(let i=0; i<totalCells; i++){
+    let day, month, year, isOtherMonth=false;
+    if(i < firstDay){
+      day = daysInPrev - firstDay + i + 1;
+      month = calMonth - 1; year = calYear;
+      if(month<0){month=11;year--;}
+      isOtherMonth = true;
+    } else if(i >= firstDay + daysInMonth){
+      day = i - firstDay - daysInMonth + 1;
+      month = calMonth + 1; year = calYear;
+      if(month>11){month=0;year++;}
+      isOtherMonth = true;
+    } else {
+      day = i - firstDay + 1;
+      month = calMonth; year = calYear;
+    }
+
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday    = dateStr === todayStr;
+    const isSelected = dateStr === calSelectedDate;
+    const dayTasks   = dateMap[dateStr] || [];
+    const dots = dayTasks.slice(0,4).map(t=>
+      `<div class="cal-dot" style="background:${PRIO_COLORS[t.prio]||'#6b7a99'};opacity:${t.done?.4:1}"></div>`
+    ).join('');
+
+    html += `<div class="cal-day${isOtherMonth?' other-month':''}${isToday?' today':''}${isSelected?' selected':''}"
+      onclick="calSelectDay('${dateStr}')">
+      <div class="cal-day-num">${day}</div>
+      ${dots?`<div class="cal-dots">${dots}</div>`:''}
+    </div>`;
+  }
+
+  calDays.innerHTML = html;
+  renderDayPanel(calSelectedDate);
+}
+
+function calSelectDay(dateStr){
+  calSelectedDate = dateStr;
+  renderCalendar();
+}
+
+function renderDayPanel(dateStr){
+  const title = document.getElementById('dayPanelTitle');
+  const sub   = document.getElementById('dayPanelSub');
+  const list  = document.getElementById('dayTaskList');
+  if(!title||!list) return;
+
+  const d = new Date(dateStr+'T12:00:00');
+  const label = d.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  title.textContent = label.replace(/^\w/,c=>c.toUpperCase());
+
+  const filtered = getCalTasks();
+  const dayTasks = filtered.filter(t=>t.date===dateStr);
+
+  if(!dayTasks.length){
+    sub.textContent = 'Sin tareas para este día';
+    list.innerHTML = '<div class="day-empty">🎉 Sin vencimientos este día</div>';
+    return;
+  }
+
+  sub.textContent = `${dayTasks.length} tarea${dayTasks.length>1?'s':''} · ${dayTasks.filter(t=>!t.done).length} pendiente${dayTasks.filter(t=>!t.done).length!==1?'s':''}`;
+
+  // Sort: pending first, then by prio
+  const prioOrder = {alta:0,media:1,baja:2};
+  dayTasks.sort((a,b)=>{
+    if(a.done!==b.done) return a.done?1:-1;
+    return (prioOrder[a.prio]||1)-(prioOrder[b.prio]||1);
+  });
+
+  list.innerHTML = dayTasks.map(t=>{
+    const aInfo = AREAS.find(a=>a.id===t.area);
+    return `<div class="day-task-item${t.done?' done-item':''}">
+      <div style="margin-top:2px">
+        <div class="chk ${t.done?'on':''}" style="width:15px;height:15px" onclick="toggleDone(${t.id})"></div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="day-task-name">${esc(t.text)}</div>
+        <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center">
+          ${aInfo?`<span style="font-size:.66rem;color:var(--muted)">${aInfo.icon} ${aInfo.label}</span>`:''}
+          ${t.sub?`<span class="sub-tag" style="font-size:.63rem">${esc(t.sub)}</span>`:''}
+        </div>
+      </div>
+      <div class="day-task-meta">
+        <span class="prio-tag p-${t.prio}" style="font-size:.61rem">${t.prio}</span>
+        ${t.resp?`<span class="day-task-resp">👤 ${esc(t.resp)}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function initCalendar(){
+  const badge = document.getElementById('calBadge');
+  if(badge) badge.textContent = MONTHS_ES[new Date().getMonth()]+' '+new Date().getFullYear();
+  const footer = document.getElementById('calFooter');
+  if(footer) footer.textContent = 'Actualizado: '+new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  populateCalFilters();
+  renderCalendar();
+}
+
+// ── RESPONSABLES ──
+let responsables = [];
+
+function loadResponsables(){
+  try{ responsables = JSON.parse(localStorage.getItem('responsables_v1') || '[]'); }catch(e){}
+  renderRespList();
+}
+
+function saveResponsables(){
+  localStorage.setItem('responsables_v1', JSON.stringify(responsables));
+}
+
+function addResponsable(){
+  const nombre = document.getElementById('rNombre').value.trim().toUpperCase();
+  const email  = document.getElementById('rEmail').value.trim();
+  if(!nombre || !email){ alert('Nombre y correo son obligatorios'); return; }
+  if(responsables.find(r=>r.nombre===nombre)){ alert('Ya existe ese responsable'); return; }
+  responsables.push({nombre, email});
+  saveResponsables();
+  document.getElementById('rNombre').value='';
+  document.getElementById('rEmail').value='';
+  renderRespList();
+  populateRespDropdown();
+}
+
+function deleteResponsable(nombre){
+  responsables = responsables.filter(r=>r.nombre!==nombre);
+  saveResponsables();
+  renderRespList();
+}
+
+function renderRespList(){
+  const el = document.getElementById('respList');
+  if(!el) return;
+  if(!responsables.length){
+    el.innerHTML='<p style="color:var(--muted);font-size:.78rem;font-style:italic;padding:12px 0">Sin responsables registrados aún.</p>';
+    return;
+  }
+  el.innerHTML = responsables.map(r=>`
+    <div class="resp-item">
+      <div class="resp-avatar">${r.nombre.charAt(0)}</div>
+      <span class="resp-name">${esc(r.nombre)}</span>
+      <span class="resp-email">${esc(r.email)}</span>
+      <button class="resp-del" onclick="deleteResponsable('${r.nombre}')" title="Eliminar">×</button>
+    </div>`).join('');
+}
+
+// ── EMAILJS CONFIG ──
+function saveEmailJSConfig(){
+  const cfg = {
+    service:  document.getElementById('ejsService').value.trim(),
+    template: document.getElementById('ejsTemplate').value.trim(),
+    key:      document.getElementById('ejsPublicKey').value.trim(),
+  };
+  if(!cfg.service||!cfg.template||!cfg.key){ alert('Completa los 3 campos'); return; }
+  localStorage.setItem('emailjs_cfg', JSON.stringify(cfg));
+  emailjs.init(cfg.key);
+  document.getElementById('ejsStatus').innerHTML='<span style="color:var(--green)">✓ Configuración guardada</span>';
+}
+
+function loadEmailJSConfig(){
+  // Default config pre-loaded
+  const DEFAULT_CFG = {
+    service:  'service_c4he5q3',
+    template: 'template_4r8a09c',
+    key:      'hJsGLiFpJ-k1Y8yvR'
+  };
+  try{
+    const saved = localStorage.getItem('emailjs_cfg');
+    const cfg = saved ? JSON.parse(saved) : DEFAULT_CFG;
+    // If no saved config, save the default
+    if(!saved) localStorage.setItem('emailjs_cfg', JSON.stringify(DEFAULT_CFG));
+    if(cfg.key){
+      emailjs.init(cfg.key);
+      if(document.getElementById('ejsService')){
+        document.getElementById('ejsService').value  = cfg.service||'';
+        document.getElementById('ejsTemplate').value = cfg.template||'';
+        document.getElementById('ejsPublicKey').value= cfg.key||'';
+        document.getElementById('ejsStatus').innerHTML='<span style="color:var(--green)">✓ Configuración lista</span>';
+      }
+    }
+  }catch(e){}
+}
+
+function getEmailJSConfig(){
+  try{ return JSON.parse(localStorage.getItem('emailjs_cfg')||'{}'); }catch(e){ return {}; }
+}
+
+// ── NOTIFICACIONES ──
+let notifByResp = {};
+
+function openNotifModal(){
+  const cfg = getEmailJSConfig();
+  if(!cfg.service||!cfg.template||!cfg.key){
+    alert('Primero configura EmailJS en la pestaña Responsables'); return;
+  }
+
+  const d1 = new Date(); d1.setDate(d1.getDate()+1);
+  const d2 = new Date(); d2.setDate(d2.getDate()+2);
+  const d1Str = d1.toISOString().split('T')[0];
+  const d2Str = d2.toISOString().split('T')[0];
+
+  const pendingTasks = tasks.filter(t=>!t.done && t.date && (t.date===d1Str||t.date===d2Str));
+
+  if(!pendingTasks.length){
+    alert('No hay tareas con vencimiento en 1 o 2 días. ¡Todo al día! ✓'); return;
+  }
+
+  // Group by responsable
+  notifByResp = {};
+  pendingTasks.forEach(t=>{
+    const key = t.resp||'Sin responsable';
+    if(!notifByResp[key]) notifByResp[key]=[];
+    notifByResp[key].push(t);
+  });
+
+  // Build modal list
+  const list = document.getElementById('notifList');
+  list.innerHTML = Object.entries(notifByResp).map(([nombre, tlist])=>{
+    const respData = responsables.find(r=>r.nombre===nombre.toUpperCase());
+    const hasEmail = !!respData;
+    const taskPreview = tlist.map(t=>`<div style="font-size:.7rem;color:var(--muted);padding:2px 0">• ${esc(t.text)} — ${fmtD(t.date)} <span class="prio-tag p-${t.prio}" style="font-size:.58rem">${t.prio}</span></div>`).join('');
+
+    return `<div style="background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <input type="checkbox" id="chk_${nombre}" ${hasEmail?'checked':'disabled'}
+          style="width:16px;height:16px;accent-color:var(--copper);cursor:${hasEmail?'pointer':'not-allowed'}">
+        <label for="chk_${nombre}" style="flex:1;cursor:${hasEmail?'pointer':'default'}">
+          <span style="font-weight:600;font-size:.88rem;color:var(--text)">${esc(nombre)}</span>
+          <span style="font-size:.72rem;color:${hasEmail?'var(--green)':'var(--red)'};margin-left:8px">
+            ${hasEmail?'✓ '+esc(respData.email):'⚠ Sin correo registrado'}
+          </span>
+        </label>
+        <span style="font-size:.7rem;background:var(--blue-bg);color:var(--blue);padding:2px 8px;border-radius:10px">
+          ${tlist.length} tarea${tlist.length>1?'s':''}
+        </span>
+      </div>
+      <div style="padding-left:26px">${taskPreview}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('notifModal').style.display='flex';
+}
+
+function closeNotifModal(){
+  document.getElementById('notifModal').style.display='none';
+}
+
+function notifSelectAll(val){
+  Object.keys(notifByResp).forEach(nombre=>{
+    const chk = document.getElementById('chk_'+nombre);
+    if(chk && !chk.disabled) chk.checked = val;
+  });
+}
+
+async function sendSelectedNotifs(){
+  const cfg = getEmailJSConfig();
+  const btn = document.getElementById('btnSendNotif');
+  btn.disabled=true; btn.textContent='Enviando…';
+
+  let sent=0, errors=0, skipped=0;
+
+  for(const [nombre, tlist] of Object.entries(notifByResp)){
+    const chk = document.getElementById('chk_'+nombre);
+    if(!chk || !chk.checked){ skipped++; continue; }
+
+    const respData = responsables.find(r=>r.nombre===nombre.toUpperCase());
+    if(!respData){ skipped++; continue; }
+
+    const taskLines = tlist.map(t=>`• ${t.text} — ${fmtD(t.date)} (${t.prio})`).join('\n');
+
+    try{
+      await emailjs.send(cfg.service, cfg.template, {
+        to_name:    nombre,
+        to_email:   respData.email,
+        task_count: tlist.length,
+        task_list:  taskLines,
+        message:    `Tienes ${tlist.length} tarea(s) próximas a vencer:\n\n${taskLines}`,
+      });
+      sent++;
+    }catch(e){
+      console.error('Error enviando a', nombre, e);
+      errors++;
+    }
+  }
+
+  btn.disabled=false; btn.textContent='📧 ENVIAR';
+  closeNotifModal();
+  alert(`✓ Enviadas: ${sent}${skipped?' · Omitidas: '+skipped:''}${errors?' · Errores: '+errors:''}`);
+}
+
+// Auto-check al cargar (silencioso, solo loguea)
+function autoCheckNotifications(){
+  const cfg = getEmailJSConfig();
+  if(!cfg.service) return;
+  const d1 = new Date(); d1.setDate(d1.getDate()+1);
+  const d2 = new Date(); d2.setDate(d2.getDate()+2);
+  const d1Str = d1.toISOString().split('T')[0];
+  const d2Str = d2.toISOString().split('T')[0];
+  const count = tasks.filter(t=>!t.done&&t.date&&(t.date===d1Str||t.date===d2Str)).length;
+  if(count>0) console.log(`[Notificaciones] ${count} tarea(s) vencen en 1-2 días`);
+}
+
+// ── SEMÁFORO ──
+function renderSemaforo(ft){
+  const el = document.getElementById('dSemaforo');
+  if(!el) return;
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const weekEnd  = new Date(); weekEnd.setDate(weekEnd.getDate()+7);
+  const weekStr  = weekEnd.toISOString().split('T')[0];
+
+  const respNames = [...new Set(ft.filter(t=>t.resp).map(t=>t.resp))].sort();
+
+  if(!respNames.length){
+    el.innerHTML='<p style="color:var(--muted);font-size:.76rem;font-style:italic">Sin responsables en este filtro</p>';
+    return;
+  }
+
+  el.innerHTML = respNames.map(nombre=>{
+    const mine    = ft.filter(t=>t.resp===nombre);
+    const total   = mine.length;
+    const done    = mine.filter(t=>t.done).length;
+    const venc    = mine.filter(t=>!t.done&&isOv(t.date)).length;
+    const prox    = mine.filter(t=>!t.done&&t.date&&!isOv(t.date)&&t.date<=weekStr).length;
+    const pendOk  = total - done - venc - prox;
+
+    // Semáforo logic
+    let luz = 'verde';
+    let estado = 'Al día';
+    if(venc>0){       luz='rojo';     estado=`${venc} vencida${venc>1?'s':''}`;  }
+    else if(prox>0){  luz='amarillo'; estado=`${prox} por vencer esta semana`; }
+
+    return `<div class="sem-row">
+      <div class="sem-luz ${luz}"></div>
+      <span class="sem-name">${esc(nombre)}</span>
+      <div class="sem-stats">
+        <span class="sem-stat total">${total} total</span>
+        ${venc  ? `<span class="sem-stat venc">⚠ ${venc} venc</span>` : ''}
+        ${prox  ? `<span class="sem-stat prox">⏰ ${prox} prox</span>` : ''}
+        <span class="sem-stat ok">✓ ${done} listas</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── AREAS MANAGEMENT ──
+const STRIPE_COLORS=['s-trabajo','s-personal','s-salud','s-hogar','s-otros','s-extra1','s-extra2','s-extra3'];
+
+function genAreaId(label){
+  return label.toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g,'').substring(0,12) + '_' + Date.now().toString(36);
+}
+
+function saveAreasToStorage(){
+  localStorage.setItem('custom_areas', JSON.stringify(AREAS));
+}
+
+function loadAreasFromStorage(){
+  const saved = localStorage.getItem('custom_areas');
+  if(saved){
+    try{
+      const parsed = JSON.parse(saved);
+      if(Array.isArray(parsed) && parsed.length) {
+        AREAS.length = 0;
+        parsed.forEach(a => AREAS.push(a));
+      }
+    }catch(e){}
+  }
+  // rebuild af for any new areas
+  AREAS.forEach(a=>{ if(!af[a.id]) af[a.id]={status:'all',prio:'',date:'',sub:'',resp:'',sortCol:'',sortDir:'asc'}; });
+  // inject stripe CSS dynamically
+  AREAS.forEach(a=>{ if(!document.querySelector('.'+a.stripe)) injectStripeCSS(a); });
+  updateAreaSelects();
+}
+
+function injectStripeCSS(area){
+  const style = document.createElement('style');
+  style.textContent = `.${area.stripe}{background:${area.color};}`;
+  document.head.appendChild(style);
+}
+
+function updateAreaSelects(){
+  // Update fArea select in add form
+  const fArea = document.getElementById('fArea');
+  if(fArea){
+    fArea.innerHTML = AREAS.map(a=>`<option value="${a.id}">${a.icon} ${a.label}</option>`).join('');
+  }
+  // Update dashboard area filter
+  const dArea = document.getElementById('dArea');
+  if(dArea){
+    dArea.innerHTML = '<option value="">Todas las áreas</option>' +
+      AREAS.map(a=>`<option value="${a.id}">${a.icon} ${a.label}</option>`).join('');
+  }
+}
+
+function addArea(){
+  const icon  = document.getElementById('aIcon').value.trim() || '📌';
+  const label = document.getElementById('aLabel').value.trim();
+  const color = document.getElementById('aColor').value;
+  if(!label){ alert('Ponle un nombre al área'); return; }
+
+  const id = genAreaId(label);
+  const stripe = 's-custom-'+id;
+  const newArea = {id, label, icon, stripe, color};
+  AREAS.push(newArea);
+  af[id] = {status:'all',prio:'',date:'',sub:'',resp:'',sortCol:'',sortDir:'asc'};
+  injectStripeCSS(newArea);
+  saveAreasToStorage();
+  updateAreaSelects();
+
+  document.getElementById('aIcon').value='';
+  document.getElementById('aLabel').value='';
+  renderAreasList();
+  render();
+}
+
+function deleteArea(id){
+  const area = AREAS.find(a=>a.id===id);
+  const taskCount = tasks.filter(t=>t.area===id).length;
+  if(taskCount > 0){
+    if(!confirm(`Esta área tiene ${taskCount} tarea(s). ¿Eliminarla de todas formas? Las tareas quedarán sin área asignada.`)) return;
+  } else {
+    if(!confirm(`¿Eliminar el área "${area?.label}"?`)) return;
+  }
+  AREAS.splice(AREAS.findIndex(a=>a.id===id), 1);
+  delete af[id];
+  saveAreasToStorage();
+  updateAreaSelects();
+  renderAreasList();
+  render();
+}
+
+let editingAreaId = null;
+
+function startEditArea(id){
+  editingAreaId = id;
+  renderAreasList();
+}
+
+function saveEditArea(id){
+  const area = AREAS.find(a=>a.id===id);
+  if(!area) return;
+  area.icon  = document.getElementById('eAIcon_'+id).value.trim() || area.icon;
+  area.label = document.getElementById('eALabel_'+id).value.trim() || area.label;
+  area.color = document.getElementById('eAColor_'+id).value;
+  area.stripe = area.stripe; // keep stripe class
+  // Update stripe CSS
+  injectStripeCSS(area);
+  editingAreaId = null;
+  saveAreasToStorage();
+  updateAreaSelects();
+  renderAreasList();
+  render();
+}
+
+function cancelEditArea(){
+  editingAreaId = null;
+  renderAreasList();
+}
+
+function renderAreasList(){
+  const el = document.getElementById('areasList');
+  if(!el) return;
+  el.innerHTML = AREAS.map(a=>{
+    const taskCount = tasks.filter(t=>t.area===a.id).length;
+    const isEditing = editingAreaId === a.id;
+    return `<div class="area-item">
+      <div class="area-color-dot" style="background:${a.color}"></div>
+      <span class="area-item-icon">${a.icon}</span>
+      <span class="area-item-label">${esc(a.label)}</span>
+      <span class="area-item-id">${taskCount} tarea${taskCount!==1?'s':''}</span>
+      ${isEditing ? `
+        <div class="area-edit-row" style="width:100%;display:flex">
+          <input id="eAIcon_${a.id}"  value="${esc(a.icon)}"  style="width:60px;text-align:center;font-size:1.1rem;background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:5px;color:var(--text);outline:none" maxlength="2">
+          <input id="eALabel_${a.id}" value="${esc(a.label)}" style="flex:1;min-width:120px;background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:5px 10px;color:var(--text);outline:none">
+          <input id="eAColor_${a.id}" type="color" value="${a.color}" style="width:44px;height:34px;padding:2px;border-radius:4px;border:1px solid var(--border);cursor:pointer;background:var(--card2)">
+          <button class="btn-save" onclick="saveEditArea('${a.id}')">✓ Guardar</button>
+          <button class="btn-cancel" onclick="cancelEditArea()">✕</button>
+        </div>` : `
+        <button class="area-edit-btn" onclick="startEditArea('${a.id}')">✎ Editar</button>
+        <button class="area-del-btn"  onclick="deleteArea('${a.id}')">× Eliminar</button>`}
+    </div>`;
+  }).join('');
+}
+
+loadTheme();
+loadAreasFromStorage();
+loadResponsables();
+loadEmailJSConfig();
+loadTasks();
+setInterval(loadTasks,30000);
 </script>
 </body>
 </html>
